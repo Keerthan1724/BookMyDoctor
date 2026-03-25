@@ -1,0 +1,115 @@
+import { useState, useEffect } from "react";
+import AuthModal from "../../components/AuthModal";
+import { sendOTP } from "../../services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { customModal } from "../../services/modalService";
+
+const ForgotPassword = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const initialEmail = location.state?.email || "";
+  const [email, setEmail] = useState(initialEmail);
+  const [loading, setLoading] = useState(false);
+  const [isResend, setIsResend] = useState(!!location.state?.email);
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handleSendOTP = async () => {
+    if (!email) {
+      alert("Email field cannot be empty");
+      return;
+    }
+    if (!validateEmail(email)) {
+      alert("Enter a valid email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await sendOTP({ email });
+
+      if (response?.data?.message) {
+        alert(response.data.message);
+        return;
+      }
+
+      alert(`OTP ${isResend ? "resent" : "sent"} to your email`);
+
+      const expiresAt = Date.now() + 60000;
+
+      navigate("/verify-otp", {
+        state: {
+          email,
+          expiresAt,
+          background: location.state?.background || location,
+        },
+      });
+    } catch (error) {
+      console.error("Send OTP Error:", error);
+
+      const data = error.response?.data;
+
+      const role = data?.role || "your account";
+
+      const backendError =
+        data?.non_field_errors?.[0] || data?.email?.[0] || data?.message;
+
+      if (data?.role_restricted) {
+        customModal({
+          type: "error",
+          title: "Access Restricted",
+          message: `You are logged in as ${role}. ${role} accounts cannot reset password using OTP.\n\nPlease contact the system administrator for assistance.`,
+          primaryBtnText: "Okay",
+        });
+      } else {
+        alert(backendError || "Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (location.state?.email) {
+      setIsResend(true);
+    }
+  }, [location.state]);
+
+  return (
+    <AuthModal>
+      <h2 className="text-2xl font-semibold text-center mb-2">
+        Forgot Password
+      </h2>
+
+      <p className="text-sm text-gray-500 text-center mb-6">
+        Enter your registered email
+      </p>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSendOTP();
+        }}
+        className="flex flex-col gap-4"
+      >
+        <input
+          type="email"
+          placeholder="Enter your email"
+          className="border rounded-lg p-3 bg-transparent"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <button
+          disabled={loading}
+          className="bg-primary text-white py-3 rounded-lg"
+        >
+          {loading ? "Sending..." : isResend ? "Resend OTP" : "Send OTP"}
+        </button>
+      </form>
+    </AuthModal>
+  );
+};
+
+export default ForgotPassword;

@@ -1,0 +1,409 @@
+import { useState, useEffect, useContext } from "react";
+import MainLayout from "../../layouts/MainLayout";
+import { AuthContext } from "../../context/AuthContext";
+import { updateProfile, deleteAccount } from "../../services/authService";
+
+import { FiEdit2, FiTrash2, FiLogOut, FiCamera } from "react-icons/fi";
+
+import DashboardCard from "../../components/DashboardCard";
+import { userDashboardItems } from "../../data/dashboardItems";
+
+import ImagePreviewModal from "../../components/ImagePreviewModal";
+import CropImageModal from "../../components/CropImageModal";
+
+import { toast } from "../../components/CustomToast";
+import { customModal } from "../../services/modalService";
+
+const formFields = [
+  { label: "Username", name: "username", type: "text", editable: true },
+  { label: "Email", name: "email", type: "email", editable: false },
+  { label: "Phone", name: "phone", type: "text", editable: true },
+  { label: "Age", name: "age", type: "number", editable: true },
+  {
+    label: "Gender",
+    name: "gender",
+    type: "select",
+    editable: true,
+    options: ["MALE", "FEMALE", "OTHER"],
+  },
+  { label: "Address", name: "address", type: "textarea", editable: true },
+];
+
+const UserProfile = () => {
+  const { user, setUser, logout, getAvatarColors } = useContext(AuthContext);
+
+  const [form, setForm] = useState({});
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const [previewModal, setPreviewModal] = useState(false);
+  const [cropModal, setCropModal] = useState(false);
+
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [imageSrc, setImageSrc] = useState(null);
+
+  const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const avatarStyle = getAvatarColors(user?.username);
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        age: user.age || "",
+        gender: user.gender || "",
+        address: user.address || "",
+      });
+
+      if (user.profile_image) {
+        const url = `http://localhost:8000${user.profile_image}?t=${Date.now()}`;
+        setPreviewImage(url);
+      }
+    }
+  }, [user]);
+
+  const onCropComplete = (_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels);
+  };
+
+  const getCroppedImg = async (imageSrc, crop) => {
+    const image = new Image();
+    image.src = imageSrc;
+
+    await new Promise((resolve) => (image.onload = resolve));
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+
+    ctx.drawImage(
+      image,
+      crop.x,
+      crop.y,
+      crop.width,
+      crop.height,
+      0,
+      0,
+      crop.width,
+      crop.height,
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg");
+    });
+  };
+
+  const handleAvatarClick = () => {
+    if (!previewImage) return;
+    setPreviewModal(true);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast("Please select an image", "error");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast("Image must be smaller than 2MB", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setImageSrc(reader.result);
+      setCropModal(true);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropSave = async () => {
+    try {
+      if (!croppedAreaPixels) return;
+
+      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+
+      const formData = new FormData();
+      formData.append("profile_image", croppedBlob, "profile.jpg");
+
+      const res = await updateProfile(formData);
+
+      const url = `http://localhost:8000${res.data.data.profile_image}?t=${Date.now()}`;
+
+      setUser(res.data.data);
+      setPreviewImage(url);
+
+      setCropModal(false);
+      setImageSrc(null);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("delete_image", "true");
+
+      const res = await updateProfile(formData);
+
+      setUser(res.data.data);
+      setPreviewImage(null);
+
+      setPreviewModal(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const validateForm = () => {
+    if (form.username.trim().length < 3) {
+      toast("Username must be at least 3 characters", "error");
+      return false;
+    }
+
+    if (form.phone && !/^[0-9]{10}$/.test(form.phone)) {
+      toast("Phone must be 10 digits", "error");
+      return false;
+    }
+
+    if (form.age && form.age <= 0) {
+      toast("Age must be greater than 0", "error");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleUpdate = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      Object.keys(form).forEach((key) => {
+        formData.append(key, form[key]);
+      });
+
+      const res = await updateProfile(formData);
+
+      setUser(res.data.data);
+
+      toast("Profile updated successfully", "success");
+
+      setEditMode(false);
+    } catch (err) {
+      console.log(err);
+      toast("Profile update failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = () => {
+    customModal({
+      type: "warning",
+      title: "Delete Account?",
+      message: `This action will permanently delete your account along with all your data including appointments, booking history, and profile details.
+
+This action cannot be undone.
+
+Are you sure you want to continue?`,
+      primaryBtnText: "Delete",
+      secondaryBtnText: "Cancel",
+      onPrimary: async () => {
+        try {
+          await deleteAccount();
+          logout();
+        } catch {
+          toast("Delete failed", "error");
+        }
+      },
+    });
+  };
+
+  const actions = [
+    {
+      label: "Edit Profile",
+      icon: FiEdit2,
+      onClick: () => setEditMode(true),
+      className: "bg-primary text-white",
+    },
+    {
+      label: "Logout",
+      icon: FiLogOut,
+      onClick: logout,
+      className: "bg-orange-500 text-white",
+    },
+    {
+      label: "Delete Account",
+      icon: FiTrash2,
+      onClick: handleDelete,
+      className: "bg-red-600 text-white",
+    },
+  ];
+
+  if (!user) return null;
+
+  return (
+    <MainLayout>
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
+        <h2 className="text-2xl font-bold">Dashboard</h2>
+        <DashboardCard user={user} items={userDashboardItems} />
+
+        <h2 className="text-2xl font-bold">Profile</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-cardLight dark:bg-cardDark p-8 rounded-xl shadow-lg">
+          <div className="flex flex-col items-center gap-6">
+            <div className="relative w-48 h-48 rounded-full border-4 border-primary flex items-center justify-center">
+              <div
+                onClick={handleAvatarClick}
+                className="w-full h-full rounded-full overflow-hidden cursor-pointer"
+              >
+                {previewImage ? (
+                  <img
+                    src={previewImage}
+                    className="w-full h-full object-cover"
+                    alt="profile"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-7xl font-bold"
+                    style={{
+                      backgroundColor: avatarStyle.bg,
+                      color: avatarStyle.color,
+                    }}
+                  >
+                    {user.username?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              <label className="absolute bottom-2 right-2 bg-primary p-3 rounded-full cursor-pointer text-white shadow-lg border-2 border-white">
+                <FiCamera />
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleFileSelect}
+                />
+              </label>
+            </div>
+
+            {actions.map((btn, i) => {
+              const Icon = btn.icon;
+
+              return (
+                <button
+                  key={i}
+                  onClick={btn.onClick}
+                  className={`w-full py-3 rounded-lg flex justify-center items-center gap-2 ${btn.className}`}
+                >
+                  <Icon /> {btn.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-4">
+            {formFields.map((field) => (
+              <div key={field.name} className="flex flex-col gap-2">
+                <label>{field.label}</label>
+
+                {field.type === "select" ? (
+                  <select
+                    value={form[field.name] || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, [field.name]: e.target.value })
+                    }
+                    disabled={!editMode || !field.editable}
+                    className="border p-3 rounded-lg"
+                  >
+                    {field.options.map((opt) => (
+                      <option key={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : field.type === "textarea" ? (
+                  <textarea
+                    value={form[field.name] || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, [field.name]: e.target.value })
+                    }
+                    disabled={!editMode || !field.editable}
+                    className="border p-3 rounded-lg"
+                  />
+                ) : (
+                  <input
+                    type={field.type}
+                    value={form[field.name] || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, [field.name]: e.target.value })
+                    }
+                    disabled={!editMode || !field.editable}
+                    className="border p-3 rounded-lg"
+                  />
+                )}
+              </div>
+            ))}
+
+            {editMode && (
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={handleUpdate}
+                  disabled={loading}
+                  className="flex-1 bg-primary text-white py-3 rounded-lg"
+                >
+                  {loading ? "Updating..." : "Update Profile"}
+                </button>
+
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="flex-1 bg-gray-300 py-3 rounded-lg"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {previewModal && (
+        <ImagePreviewModal
+          previewImage={previewImage}
+          onClose={() => setPreviewModal(false)}
+          onDelete={handleDeleteImage}
+        />
+      )}
+
+      {cropModal && (
+        <CropImageModal
+          imageSrc={imageSrc}
+          crop={crop}
+          zoom={zoom}
+          cropShape="round"
+          setCrop={setCrop}
+          setZoom={setZoom}
+          onCropComplete={onCropComplete}
+          onClose={() => setCropModal(false)}
+          onSave={handleCropSave}
+        />
+      )}
+    </MainLayout>
+  );
+};
+
+export default UserProfile;
