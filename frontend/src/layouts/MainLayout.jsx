@@ -5,7 +5,9 @@ function MainLayout({ children }) {
   return (
     <div className="bg-bgLight dark:bg-cardDark flex flex-col min-h-screen">
       <Navbar />
-      <div>{children}</div>
+      <main className="flex-1">
+        {children}
+      </main>
       <Footer />
     </div>
   );

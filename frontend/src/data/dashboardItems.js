@@ -9,14 +9,14 @@ export const doctorDashboardItems = [
     iconColor: "text-green-600",
   },
   {
-    label: "Active Appointments",
+    label: "Active Appt.",
     value: "activeAppointments",
     icon: Clock,
     iconBg: "bg-blue-100",
     iconColor: "text-blue-600",
   },
   {
-    label: "Completed Appointments",
+    label: "Completed Appt.",
     value: "completedAppointments",
     icon: CheckCircle2,
     iconBg: "bg-purple-100",

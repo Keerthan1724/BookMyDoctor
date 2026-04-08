@@ -202,16 +202,22 @@ class AppointmentViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
+        queryset = Appointment.objects.select_related(
+            "slot",
+            "slot__doctor",
+            "slot__doctor__user"
+        )
+
         if user.role == "USER":
-            return Appointment.objects.filter(patient=user)
+            return queryset.filter(patient=user)
 
         if user.role == "DOCTOR":
-            return Appointment.objects.filter(
+            return queryset.filter(
                 slot__doctor__user=user
             )
 
         if user.role == "ADMIN":
-            return Appointment.objects.all()
+            return queryset
 
         return Appointment.objects.none()
 
@@ -231,8 +237,14 @@ class AppointmentViewSet(ModelViewSet):
         if user.role == "DOCTOR":
             if appointment.slot.doctor.user != user:
                 raise PermissionDenied("Not your appointment")
-            serializer.save()
-            return
+
+            updated = serializer.save()
+
+            if serializer.validated_data.get("status") == "REJECTED":
+                appointment.slot.is_available = True
+                appointment.slot.save()
+
+            return updated
 
         if user.role == "USER":
             raise PermissionDenied("Users cannot modify appointment")
@@ -247,8 +259,8 @@ class AppointmentViewSet(ModelViewSet):
             instance.save()
 
             slot = instance.slot
-            instance.slot.is_available = True
-            instance.slot.save()
+            slot.is_available = True
+            slot.save()
             return
 
         raise PermissionDenied("Not allowed to cancel appointment")
@@ -354,8 +366,8 @@ class CreateStripeCheckoutSessionAPIView(APIView):
                     "quantity": 1,
                 }],
                 mode="payment",
-                success_url="http://localhost:3000/payment-success/",
-                cancel_url="http://localhost:3000/payment-cancel/",
+                success_url="http://localhost:5173/payment-success",
+                cancel_url="http://localhost:5173/appointmenthistory",
                 metadata={
                     "appointment_id": appointment.id
                 }

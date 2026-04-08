@@ -5,7 +5,7 @@ const API = axios.create({
 });
 
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const token = sessionStorage.getItem("accessToken");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -17,14 +17,14 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
 
     if (error.response && error.response.status === 401 && refreshToken) {
       const res = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
         refresh: refreshToken,
       });
 
-      localStorage.setItem("accessToken", res.data.access);
+      sessionStorage.setItem("accessToken", res.data.access);
 
       error.config.headers.Authorization = `Bearer ${res.data.access}`;
 

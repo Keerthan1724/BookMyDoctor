@@ -18,7 +18,7 @@ const Navbar = () => {
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Doctors", path: "/doctors" },
-    { name: "Appointment", path: "/appointments", auth: true },
+    { name: "Appointment", path: "/appointmenthistory", auth: true },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -67,7 +67,7 @@ const Navbar = () => {
                     {item.name}
 
                     <span
-                      className={`absolute bottom-0 left-0 w-full h-[2px] bg-primary transform
+                      className={`absolute -bottom-2 left-0 w-full h-[2px] bg-primary transform
         transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
         ${
           isActive

@@ -1,6 +1,10 @@
 import API from "./api";
 
-export const getAvailability = () => {
+export const getAvailability = (doctorId) => {
+  return API.get(`/availability/?doctor=${doctorId}`)
+};
+
+export const getAvailabilityslots = () => {
   return API.get("/availability/");
 };
 

@@ -15,12 +15,12 @@ export const AuthProvider = ({ children }) => {
       const res = await getProfile();
 
       setUser(res.data);
-      localStorage.setItem("user", JSON.stringify(res.data));
+      sessionStorage.setItem("user", JSON.stringify(res.data));
 
       return res.data;
     } catch (err) {
       setUser(null);
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
       return null;
     } finally {
       setLoading(false);
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const init = async () => {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
 
       if (token) {
         await loadUser();
@@ -44,9 +44,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("user");
 
     setUser(null);
     navigate("/");

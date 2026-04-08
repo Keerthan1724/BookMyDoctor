@@ -44,8 +44,8 @@ const Login = () => {
       setLoading(true);
       const res = await loginUser({ email, password });
 
-      localStorage.setItem("accessToken", res.data.access);
-      localStorage.setItem("refreshToken", res.data.refresh);
+      sessionStorage.setItem("accessToken", res.data.access);
+      sessionStorage.setItem("refreshToken", res.data.refresh);
 
       toast(res.data.message || "Login successful", "success");
 

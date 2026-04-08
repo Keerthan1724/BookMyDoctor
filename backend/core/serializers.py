@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password
+from django.db import transaction
 from .models import (User, 
                      DoctorProfile, 
                      Availability, 
@@ -195,6 +196,8 @@ class DoctorSerializer(serializers.ModelSerializer):
         return instance
 
 class AvailabilitySerializer(serializers.ModelSerializer):
+    doctor = DoctorSerializer(read_only=True)
+
     class Meta:
         model = Availability
         fields = [
@@ -259,6 +262,11 @@ class AvailabilitySerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class AppointmentSerializer(serializers.ModelSerializer):
+    slot = AvailabilitySerializer(read_only=True)
+    patient = UserProfileSerializer(read_only=True)
+
+    rating = serializers.SerializerMethodField()
+
     class Meta:
         model = Appointment
         fields = [
@@ -271,11 +279,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "fee",
             "description",
             "is_rated",
+            "rating",
             "created_at",
         ]
         read_only_fields = [
             "patient",
-            "status",
             "payment_status",
             "fee",
             "is_rated",
@@ -284,6 +292,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         slot = data.get("slot")
+
+        if not slot:
+            return data
 
         if not slot.is_available:
             raise serializers.ValidationError("This slot is not available.")
@@ -297,27 +308,35 @@ class AppointmentSerializer(serializers.ModelSerializer):
         if not slot.doctor.is_active:
             raise serializers.ValidationError("Doctor is currently inactive.")
 
-        if Appointment.objects.filter(slot=slot).exists():
-            raise serializers.ValidationError("This slot is already booked.")
-
         return data
+    
+    def get_rating(self, obj):
+        review = Review.objects.filter(appointment=obj).first()
+        return review.rating if review else None
 
     def create(self, validated_data):
         user = self.context["request"].user
         slot = validated_data["slot"]
 
-        appointment = Appointment.objects.create(
-            patient=user,
-            slot=slot,
-            payment_type=validated_data["payment_type"],
-            description=validated_data.get("description", ""),
-            fee=slot.doctor.consultation_fee,
-            status="PENDING",
-            payment_status="UNPAID",
-        )
+        with transaction.atomic():
+            # lock the slot
+            slot = Availability.objects.select_for_update().get(id=slot.id)
 
-        slot.is_available = False
-        slot.save()
+            if not slot.is_available:
+                raise serializers.ValidationError("Slot already booked")
+
+            appointment = Appointment.objects.create(
+                patient=user,
+                slot=slot,
+                payment_type=validated_data["payment_type"],
+                description=validated_data.get("description", ""),
+                fee=slot.doctor.consultation_fee,
+                status="PENDING",
+                payment_status="UNPAID",
+            )
+
+            slot.is_available = False
+            slot.save()
 
         return appointment
 

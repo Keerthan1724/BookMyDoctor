@@ -19,6 +19,8 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import UserProfile from "../pages/user/UserProfile";
 import Appointment from "../pages/user/Appointment";
 import AppointmentHistory from "../pages/user/AppointmentHistory";
+import PaymentSuccess from "../pages/user/PaymentSuccess";
+import Review from "../pages/user/Review";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AddDoctor from "../pages/admin/AddDoctor";
@@ -29,6 +31,7 @@ import UserList from "../pages/admin/UserList";
 import DoctorAppointment from "../pages/doctor/DoctorAppointment";
 import DoctorDashboard from "../pages/doctor/DoctorDashboard";
 import DoctorProfile from "../pages/doctor/DoctorProfile";
+import ViewReview from "../pages/doctor/ViewReview";
 
 function AppRoutes() {
   const location = useLocation();
@@ -109,18 +112,18 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/appointment"
-          element={
-            <ProtectedRoute allowedRoles={["USER"]}>
-              <Appointment />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/appointmenthistory"
           element={
             <ProtectedRoute allowedRoles={["USER"]}>
               <AppointmentHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-success"
+          element={
+            <ProtectedRoute allowedRoles={["USER"]}>
+              <PaymentSuccess />
             </ProtectedRoute>
           }
         />
@@ -197,6 +200,33 @@ function AppRoutes() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<OTPVerify />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
+          <Route
+            path="/appointment"
+            element={
+              <ProtectedRoute allowedRoles={["USER"]}>
+                <Appointment modal />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/review"
+            element={
+              <ProtectedRoute allowedRoles={["USER"]}>
+                <Review />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/view-review/:id"
+            element={
+              <ProtectedRoute allowedRoles={["DOCTOR"]}>
+                <ViewReview />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       )}
     </>

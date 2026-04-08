@@ -4,7 +4,7 @@ import logo from "../assets/logo.png";
 function Footer() {
   return (
     <footer className="relative dark:bg-cardDark bg-gray-50 dark:text-white">
-      <div className="w-full flex bg-white dark:bg-gray-900 items-center justify-around py-14">
+      <div className="w-full flex bg-white dark:bg-gray-900 items-center justify-around py-10">
         {/* Logo & Description */}
         <div>
           <div className="flex items-center gap-2 mb-4">
