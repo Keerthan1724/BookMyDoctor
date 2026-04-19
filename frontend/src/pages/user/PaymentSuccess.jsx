@@ -13,15 +13,15 @@ const PaymentSuccess = () => {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col justify-center items-center gap-6 bg-gray-50">
-      
+    <div className="h-screen flex flex-col justify-center items-center gap-6 bg-gray-50 dark:bg-slate-950 px-4">
+
       {/* ICON SECTION */}
       <div className="relative flex items-center justify-center">
-        
+
         {/* TICK */}
-        <div className="absolute bg-green-100 rounded-full p-4">
+        <div className="absolute bg-green-100 dark:bg-green-500/10 rounded-full p-4">
           <svg
-            className="w-10 h-10 text-green-600"
+            className="w-10 h-10 text-green-600 dark:text-green-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="3"
@@ -35,20 +35,24 @@ const PaymentSuccess = () => {
           </svg>
         </div>
 
-        {/* SPINNER RING */}
-        <div className="animate-spin rounded-full h-24 w-24 border-4 border-t-green-400 border-gray-200"></div>
+        {/* SPINNER RING (UNCHANGED) */}
+        <div className="animate-spin rounded-full h-24 w-24 border-4 border-t-green-400 border-gray-200 dark:border-slate-800"></div>
+
       </div>
 
       {/* TEXT */}
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-gray-800">
+
+        <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
           Payment Successful
         </h1>
 
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           Your appointment payment done successfully
         </p>
+
       </div>
+
     </div>
   );
 };

@@ -1,38 +1,47 @@
+import Avatar from "./Avatar";
+
 function DoctorCard({ doctor, onClick }) {
+  const isAvailable = doctor.is_active !== false;
+
   return (
     <div
       className="bg-cardLight dark:bg-cardDark border border-borderLight dark:border-borderDark rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer"
       onClick={onClick}
     >
-      <div className="bg-blue-200 hover:bg-blue-600">
-        <img
-          src={doctor.profile_image || "/default-doctor.png"}
+      {/* IMAGE */}
+      <div className="flex w-full h-28 sm:h-40 md:h-52 items-center justify-center bg-blue-200 hover:bg-blue-600">
+        <Avatar
+          name={doctor.username}
+          image={doctor.profile_image || doctor.image}
           alt={doctor.username}
-          className="w-full h-52 object-contain"
+          className="h-full w-full rounded-none"
+          imageClassName="object-contain"
+          disableFallbackBackground
+          textClassName="h-16 w-16 rounded-full bg-white/90 text-2xl font-semibold text-blue-600 shadow-sm flex items-center justify-center"
         />
       </div>
 
-      <div className="p-4">
+      {/* CONTENT */}
+      <div className="p-2 sm:p-3 md:p-4">
+        
         <div
-          className={`flex items-center gap-2 text-xs font-medium ${
-            doctor.is_active === false
-              ? "text-red-500"
-              : "text-green-500"
+          className={`flex items-center gap-2 text-[10px] sm:text-xs font-medium ${
+            isAvailable ? "text-green-500" : "text-red-500"
           }`}
         >
           <span
             className={`w-2 h-2 rounded-full ${
-              !doctor.is_active ? "bg-red-500" : "bg-green-500"
+              isAvailable ? "bg-green-500" : "bg-red-500"
             }`}
           ></span>
-          {doctor.is_active === false ? "Not Available" : "Available"}
+          {isAvailable ? "Available" : "Not Available"}
         </div>
 
-        <h3 className="mt-2 font-semibold text-lg text-textLight dark:text-textDark">
+        <h3 className="mt-1 sm:mt-2 font-semibold text-sm sm:text-base md:text-lg text-textLight dark:text-textDark">
           {doctor.username}
         </h3>
 
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-[11px] sm:text-sm text-gray-500 dark:text-gray-400">
           {doctor.specialization}
         </p>
       </div>

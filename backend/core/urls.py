@@ -4,6 +4,7 @@ from .views import (
     RegisterAPIView,
     LoginAPIView,
     ProfileAPIView,
+    UserViewSet,
     DoctorViewSet,
     AvailabilityViewSet,
     AppointmentViewSet,
@@ -17,6 +18,7 @@ from .views import (
 )
 
 router = DefaultRouter()
+router.register("users", UserViewSet, basename="users")
 router.register("doctors", DoctorViewSet, basename="doctors")
 router.register("availability", AvailabilityViewSet, basename="availability")
 router.register("appointments", AppointmentViewSet, basename="appointments")

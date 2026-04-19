@@ -9,6 +9,7 @@ import Contact from "../pages/public/Contact";
 import FAQs from "../pages/public/FAQs";
 import PrivacyPolicy from "../pages/public/PrivacyPolicy";
 import TnC from "../pages/public/TnC";
+import About from "../pages/public/About";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -20,6 +21,7 @@ import UserProfile from "../pages/user/UserProfile";
 import Appointment from "../pages/user/Appointment";
 import AppointmentHistory from "../pages/user/AppointmentHistory";
 import PaymentSuccess from "../pages/user/PaymentSuccess";
+import PaymentPreview from "../pages/user/PaymentPreview";
 import Review from "../pages/user/Review";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -96,6 +98,15 @@ function AppRoutes() {
         />
 
         <Route
+          path="/about"
+          element={
+            <PublicRoute>
+              <About />
+            </PublicRoute>
+          }
+        />
+
+        <Route
           path="/doctordetails/:id"
           element={
             <PublicRoute>
@@ -116,6 +127,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={["USER"]}>
               <AppointmentHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-preview"
+          element={
+            <ProtectedRoute allowedRoles={["USER"]}>
+              <PaymentPreview />
             </ProtectedRoute>
           }
         />

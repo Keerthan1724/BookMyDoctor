@@ -11,9 +11,11 @@ import { FiEdit2, FiTrash2, FiCamera } from "react-icons/fi";
 import { FaEnvelope } from "react-icons/fa";
 
 import ImagePreviewModal from "../../components/ImagePreviewModal";
+import Avatar from "../../components/Avatar";
 
 import { toast } from "../../components/CustomToast";
 import { customModal } from "../../services/modalService";
+import { getImageUrl } from "../../utils/media";
 
 const fields = [
   { label: "Doctor Name", name: "username", type: "text" },
@@ -30,7 +32,7 @@ const fields = [
 ];
 
 const DoctorProfile = () => {
-  const { user, setUser, getAvatarColors } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
 
   const [doctor, setDoctor] = useState(null);
   const [form, setForm] = useState({});
@@ -42,8 +44,6 @@ const DoctorProfile = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [previewModal, setPreviewModal] = useState(false);
 
-  const avatarStyle = getAvatarColors(user?.username);
-
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
@@ -54,11 +54,9 @@ const DoctorProfile = () => {
         setForm(doctorData);
 
         if (doctorData?.profile_image) {
-          const imageUrl = doctorData.profile_image.startsWith("http")
-            ? doctorData.profile_image
-            : `http://localhost:8000${doctorData.profile_image}`;
-
-          setPreviewImage(`${imageUrl}?t=${Date.now()}`);
+          setPreviewImage(
+            getImageUrl(doctorData.profile_image, { bustCache: true }),
+          );
         }
       } catch (err) {
         console.log(err);
@@ -73,26 +71,33 @@ const DoctorProfile = () => {
 
   const validateForm = () => {
     if (!form.username?.trim()) return toast("Doctor name required", "error");
-    if (!form.qualification?.trim())
+    if (!form.qualification?.trim()) {
       return toast("Qualification required", "error");
-    if (!form.specialization?.trim())
+    }
+    if (!form.specialization?.trim()) {
       return toast("Specialization required", "error");
+    }
 
-    if (!form.experience || isNaN(form.experience))
+    if (!form.experience || isNaN(form.experience)) {
       return toast("Valid experience required", "error");
+    }
 
-    if (!/^[0-9]{10}$/.test(form.contact_no || ""))
+    if (!/^[0-9]{10}$/.test(form.contact_no || "")) {
       return toast("Invalid contact number", "error");
+    }
 
     if (!form.city?.trim()) return toast("City required", "error");
 
-    if (!form.consultation_fee || isNaN(form.consultation_fee))
+    if (!form.consultation_fee || isNaN(form.consultation_fee)) {
       return toast("Valid fee required", "error");
+    }
 
-    if (!form.clinic_name?.trim())
+    if (!form.clinic_name?.trim()) {
       return toast("Clinic name required", "error");
-    if (!form.clinic_address?.trim())
+    }
+    if (!form.clinic_address?.trim()) {
       return toast("Clinic address required", "error");
+    }
     if (!form.about?.trim()) return toast("About required", "error");
 
     return true;
@@ -111,13 +116,8 @@ const DoctorProfile = () => {
       setDoctor(res.data);
 
       if (res.data.profile_image) {
-        const imageUrl = res.data.profile_image.startsWith("http")
-          ? res.data.profile_image
-          : `http://localhost:8000${res.data.profile_image}`;
+        setPreviewImage(getImageUrl(res.data.profile_image, { bustCache: true }));
 
-        setPreviewImage(`${imageUrl}?t=${Date.now()}`);
-
-        // update AuthContext user properly
         setUser((prev) => ({
           ...prev,
           profile_image: res.data.profile_image,
@@ -128,6 +128,30 @@ const DoctorProfile = () => {
     } catch (err) {
       console.log(err);
       toast("Image update failed", "error");
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("delete_image", "true");
+
+      const res = await updateDoctor(doctor.id, formData);
+
+      setDoctor(res.data);
+      setForm(res.data);
+      setPreviewImage(null);
+      setPreviewModal(false);
+
+      setUser((prev) => ({
+        ...prev,
+        profile_image: null,
+      }));
+
+      toast("Image deleted", "success");
+    } catch (err) {
+      console.log(err);
+      toast("Image delete failed", "error");
     }
   };
 
@@ -155,11 +179,11 @@ const DoctorProfile = () => {
 This action cannot be undone.
 
 Deleting your account will permanently remove:
-• Your doctor profile
-• All availability slots
-• All appointments
-• All patient reviews
-• All payment records
+- Your doctor profile
+- All availability slots
+- All appointments
+- All patient reviews
+- All payment records
 
 You will lose access completely.
       `,
@@ -177,80 +201,82 @@ You will lose access completely.
     });
   };
 
-  if (loadingPage) return <div className="p-10">Loading...</div>;
-  if (!doctor) return <div className="p-10">No profile found</div>;
+  if (loadingPage) return <div className="p-6">Loading...</div>;
+  if (!doctor) return <div className="p-6">No profile found</div>;
 
   return (
     <AdminLayout sidebarItems={doctorSidebar}>
-      <div className="p-8 space-y-8">
-        <div className="flex items-center justify-between bg-white p-6 rounded-xl shadow">
-          <div className="flex items-center gap-6">
-            <div className="relative w-44 h-44">
+      <div className="p-3 sm:p-5 md:p-6 space-y-6">
+        <div className="surface-card p-4 sm:p-6 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 w-full">
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44">
               <div className="w-full h-full rounded-full border-4 border-primary overflow-hidden">
                 <div
-                  onClick={() => previewImage && setPreviewModal(true)}
+                  onClick={() => {
+                    if (previewImage) {
+                      setPreviewModal(true);
+                    }
+                  }}
                   className="w-full h-full cursor-pointer"
                 >
-                  {previewImage ? (
-                    <img
-                      src={previewImage}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="w-full h-full flex items-center justify-center text-6xl"
-                      style={{
-                        backgroundColor: avatarStyle.bg,
-                        color: avatarStyle.color,
-                      }}
-                    >
-                      {doctor.username?.charAt(0)}
-                    </div>
-                  )}
+                  <Avatar
+                    name={doctor.username}
+                    image={previewImage}
+                    alt={doctor.username}
+                    className="w-full h-full"
+                    textClassName="text-4xl sm:text-5xl md:text-6xl font-semibold"
+                  />
                 </div>
               </div>
 
-              <label className="absolute bottom-2 right-2 bg-primary p-3 rounded-full text-white cursor-pointer shadow-lg border-2 border-white">
+              <label className="absolute bottom-1 right-1 bg-primary p-2 sm:p-3 rounded-full text-white cursor-pointer shadow-lg border-2 border-white">
                 <FiCamera />
                 <input type="file" hidden onChange={handleFileSelect} />
               </label>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h2 className="text-3xl font-semibold">{doctor.username}</h2>
-              <p className="text-gray-700">{doctor.specialization}</p>
-              <div className="flex items-center gap-2 text-gray-500 text-sm">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold">
+                {doctor.username}
+              </h2>
+              <p className="theme-text-muted text-sm sm:text-base">
+                {doctor.specialization}
+              </p>
+
+              <div className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm theme-text-muted mt-1">
                 <FaEnvelope />
                 <span>{doctor.email}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row md:flex-col gap-3 w-full md:w-auto">
             <button
               onClick={() => setEditMode(true)}
-              className="bg-primary text-white px-6 py-2 rounded-lg flex items-center gap-2"
+              className="bg-primary text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
             >
-              <FiEdit2 /> Edit Profile
+              <FiEdit2 /> Edit
             </button>
 
             <button
               onClick={handleDelete}
-              className="bg-red-500 text-white px-6 py-2 rounded-lg flex items-center gap-2"
+              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
             >
-              <FiTrash2 /> Delete Account
+              <FiTrash2 /> Delete
             </button>
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-6">Doctor Profile</h2>
+        <div className="surface-card p-4 sm:p-6 md:p-8 rounded-xl">
+          <h2 className="text-lg sm:text-xl font-semibold mb-5">
+            Doctor Profile
+          </h2>
 
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {fields.map((field) => {
               if (field.type === "textarea") {
                 return (
-                  <div key={field.name} className="col-span-2">
+                  <div key={field.name} className="sm:col-span-2">
                     <label className="label">{field.label}</label>
                     <textarea
                       value={form[field.name] || ""}
@@ -282,7 +308,7 @@ You will lose access completely.
           </div>
 
           {editMode && (
-            <div className="flex gap-4 mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button
                 onClick={handleUpdate}
                 className="flex-1 bg-primary text-white py-3 rounded-lg"
@@ -292,7 +318,7 @@ You will lose access completely.
 
               <button
                 onClick={() => setEditMode(false)}
-                className="flex-1 bg-gray-300 py-3 rounded-lg"
+                className="flex-1 bg-slate-200 dark:bg-slate-700 py-3 rounded-lg"
               >
                 Cancel
               </button>
@@ -305,6 +331,7 @@ You will lose access completely.
         <ImagePreviewModal
           previewImage={previewImage}
           onClose={() => setPreviewModal(false)}
+          onDelete={handleDeleteImage}
         />
       )}
     </AdminLayout>

@@ -123,7 +123,7 @@ const Login = () => {
 
       <div className="mt-6 text-center border-t pt-4 flex justify-center">
         <p className="text-sm text-gray-600 pr-2 dark:text-gray-200">
-          Don’t have an account ?
+          Donâ€™t have an account ?
         </p>
 
         <Link

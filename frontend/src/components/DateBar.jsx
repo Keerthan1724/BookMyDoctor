@@ -1,6 +1,13 @@
 import { useRef, useState, useEffect } from "react";
+import { toast } from "./CustomToast";
 
-const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveDateWithSlots }) => {
+const DateBar = ({
+  dates,
+  setDates,
+  selectedDate,
+  setSelectedDate,
+  handleRemoveDateWithSlots,
+}) => {
   const dateScrollRef = useRef();
   const hiddenDateInputRef = useRef();
 
@@ -115,12 +122,12 @@ const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveD
     const today = new Date().toISOString().split("T")[0];
 
     if (val < today) {
-      alert("Cannot select past date");
+      toast("Cannot select past date", "error");
       return;
     }
 
     if (dates.some((d) => d.full === val)) {
-      alert("Date already exists");
+      toast("Date already exists", "error");
       return;
     }
 
@@ -150,7 +157,7 @@ const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveD
       {showLeft && (
         <button
           onClick={() => scrollDates("left")}
-          className="px-2 py-1 bg-gray-200 rounded"
+          className="px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700"
         >
           {"<"}
         </button>
@@ -162,15 +169,17 @@ const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveD
         className="flex gap-2 overflow-hidden flex-1"
       >
         {dates.map((d, index) => (
-          <div key={d.full} className="relative min-w-[60px]">
+          <div key={d.full} className="relative min-w-[65px]">
             <div
               onClick={() => setSelectedDate(d.full)}
-              className={`text-center p-2 border rounded cursor-pointer ${
-                selectedDate === d.full ? "bg-primary text-white" : ""
+              className={`text-center p-2 border rounded-md cursor-pointer transition ${
+                selectedDate === d.full
+                  ? "bg-primary text-white border-primary"
+                  : "theme-border hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
               <p className="text-xs">{d.day}</p>
-              <p>{d.date}</p>
+              <p className="text-sm font-medium">{d.date}</p>
             </div>
 
             <button
@@ -184,13 +193,16 @@ const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveD
 
         <button
           onClick={addDate}
-          className="px-3 border rounded hover:bg-gray-100"
+          className="px-3 border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           +
         </button>
 
-        <button onClick={handleOpenDatePicker} className="px-4 border rounded">
-          Pick Date
+        <button
+          onClick={handleOpenDatePicker}
+          className="px-3 border rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
+          Pick
         </button>
 
         <input
@@ -204,7 +216,7 @@ const DateBar = ({ dates, setDates, selectedDate, setSelectedDate, handleRemoveD
       {showRight && (
         <button
           onClick={() => scrollDates("right")}
-          className="px-2 py-1 bg-gray-200 rounded"
+          className="px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700"
         >
           {">"}
         </button>

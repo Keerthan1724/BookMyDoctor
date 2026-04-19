@@ -12,6 +12,9 @@ import {
   FaPhoneAlt,
 } from "react-icons/fa";
 import { BiRupee } from "react-icons/bi";
+import { toast } from "../../components/CustomToast";
+import Avatar from "../../components/Avatar";
+import { formatTime12Hour } from "../../utils/formatters";
 
 function DoctorDetails() {
   const { id } = useParams();
@@ -24,19 +27,9 @@ function DoctorDetails() {
   const [slots, setSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
 
-  const [showModal, setShowModal] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AuthContext);
-
-  const formatTime = (time) => {
-    let [h, m] = time.split(":");
-    h = parseInt(h);
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${m} ${ampm}`;
-  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -61,8 +54,6 @@ function DoctorDetails() {
     const fetchSlots = async () => {
       try {
         const res = await getAvailability(id);
-
-        // filter only this doctor's slots
         setSlots(res.data);
 
         if (res.data.length > 0) {
@@ -80,8 +71,7 @@ function DoctorDetails() {
     const fetchAppointments = async () => {
       try {
         const res = await getAppointments();
-
-        const booked = res.data.map((a) => a.slot.id); // assuming slot id
+        const booked = res.data.map((a) => a.slot.id);
         setBookedSlots(booked);
       } catch (err) {
         console.log(err);
@@ -93,12 +83,11 @@ function DoctorDetails() {
 
   const handleBooking = async () => {
     if (!selectedDate || !selectedSlot) {
-      alert("Please select date and time");
+      toast("Please select date and time", "warning");
       return;
     }
 
     try {
-      // check auth
       if (!user) {
         navigate("/login", {
           state: { background: location },
@@ -116,7 +105,7 @@ function DoctorDetails() {
       });
     } catch (err) {
       console.log(err);
-      alert("Something went wrong while booking");
+      toast("Something went wrong while booking", "error");
     }
   };
 
@@ -150,7 +139,7 @@ function DoctorDetails() {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-screen">
-          <p className="text-lg">
+          <p className="text-base md:text-lg">
             {!doctor ? "Doctor not found." : "Loading..."}
           </p>
         </div>
@@ -160,49 +149,61 @@ function DoctorDetails() {
 
   return (
     <MainLayout>
-      <div className="pt-12 pb-24 px-4">
-        <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-10 flex flex-col md:flex-row gap-10">
-            <div className="flex-shrink-0 bg-blue-200 rounded-xl w-52 h-64 flex items-end justify-center overflow-hidden">
-              <img
-                src={doctor.profile_image || "/default-doctor.png"}
-                alt={doctor.username}
-                className="w-full h-52 object-contain"
-              />
+      <div className="px-4 sm:px-6 pb-24 pt-6 sm:pt-10">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
+
+          {/* ================= TOP SECTION ================= */}
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 p-4 sm:p-6 md:p-10">
+
+            <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:block">
+              <div className="bg-blue-200 dark:bg-gray-800 rounded-xl w-40 sm:w-48 md:w-52 h-48 sm:h-56 md:h-64 flex items-end justify-center overflow-hidden">
+                <Avatar
+                  name={doctor.username}
+                  image={doctor.profile_image}
+                  alt={doctor.username}
+                  className="h-full w-full rounded-none"
+                  imageClassName="object-fit bg-blue-200"
+                  textClassName="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 text-4xl font-semibold text-blue-600 shadow-md"
+                />
+              </div>
             </div>
 
             <div className="flex-grow w-full">
-              <div className="flex justify-between items-start">
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
                     {doctor.username}
                   </h1>
 
-                  <p className="text-gray-600 dark:text-gray-300 mt-1">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                     MBBS, MD ({doctor.specialization})
                   </p>
 
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {doctor.experience}+ Years Experience
                   </p>
                 </div>
 
                 <div
-                  className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                  className={`px-3 py-1 text-xs font-semibold rounded-full w-fit ${
                     isAvailable
-                      ? "bg-green-100 text-green-600"
-                      : "bg-red-100 text-red-500"
+                      ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-500 dark:bg-red-900/30 dark:text-red-400"
                   }`}
                 >
                   {isAvailable ? "Available" : "Not Available"}
                 </div>
+
               </div>
 
-              <p className="text-gray-700 dark:text-gray-300 font-medium mt-4">
+              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 font-medium mt-4">
                 {doctor.specialization}
               </p>
 
               <div className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+
                 <p className="flex items-center gap-2">
                   <FaClinicMedical />
                   {doctor.clinic_name}
@@ -217,51 +218,62 @@ function DoctorDetails() {
                   <FaPhoneAlt />
                   +91 {doctor.contact_no || "Not Available"}
                 </p>
+
               </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <p className="flex items-center gap-1 font-semibold text-gray-800 dark:text-white">
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                <p className="flex items-center gap-1 font-semibold text-gray-800 dark:text-white text-sm sm:text-base">
                   <BiRupee />
                   {doctor.consultation_fee} Consultation Fee
                 </p>
 
-                <div className="flex items-center">
+                <div className="flex items-center text-sm">
                   <FaStar className="text-yellow-500 mr-1" />
                   <span className="font-bold text-gray-800 dark:text-white">
                     {doctor.average_rating || 0}
                   </span>
-                  <span className="ml-2 text-gray-400 text-sm">
+                  <span className="ml-2 text-gray-400 text-xs sm:text-sm">
                     ({doctor.total_reviews || 0}+ Reviews)
                   </span>
                 </div>
+
               </div>
+
             </div>
           </div>
 
-          <hr className="mx-10 border-gray-100 dark:border-gray-700" />
+          <hr className="mx-4 sm:mx-10 border-gray-200 dark:border-gray-700" />
 
-          <div className="px-10 py-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+          <div className="px-4 sm:px-6 md:px-10 py-5">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-2">
               About Doctor
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
               {doctor.about || "No description available."}
             </p>
           </div>
+
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto -mt-12 mb-20 px-4">
+      {/* ================= BOOKING SECTION (THEME FIXED) ================= */}
+      <div className="mx-auto -mt-6 sm:-mt-10 mb-20 max-w-4xl px-4">
+
         <div
-          className={`bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-100 dark:border-gray-700 ${
+          className={`bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-200 dark:border-gray-700 ${
             !doctor?.is_active ? "opacity-40 pointer-events-none" : ""
           }`}
         >
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">
+
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-5">
             Book an Appointment
           </h2>
 
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 mb-8">
+          {/* DATES */}
+          <div className="flex gap-3 overflow-x-auto pb-4 mb-6">
+
             {uniqueDates.map((date, index) => {
               const d = new Date(date);
 
@@ -269,10 +281,10 @@ function DoctorDetails() {
                 <div
                   key={index}
                   onClick={() => setSelectedDate(date)}
-                  className={`flex flex-col items-center justify-center min-w-[60px] h-16 rounded-lg border cursor-pointer transition ${
+                  className={`flex flex-col items-center justify-center min-w-[55px] h-14 rounded-lg border cursor-pointer transition ${
                     selectedDate === date
                       ? "bg-primary text-white border-primary"
-                      : "bg-white text-gray-700 border-gray-300"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
                   }`}
                 >
                   <p className="text-[10px] uppercase">
@@ -282,40 +294,47 @@ function DoctorDetails() {
                 </div>
               );
             })}
+
           </div>
 
-          <div className="grid grid-cols-6 gap-3 mb-8">
+          {/* SLOTS */}
+          <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
+
             {filteredSlots.length ? (
               filteredSlots.map((slot) => (
                 <button
                   key={slot.id}
                   onClick={() => setSelectedSlot(slot)}
-                  className={`py-2 rounded-full border text-sm ${
+                  className={`py-2 rounded-full border text-xs sm:text-sm transition ${
                     selectedSlot?.id === slot.id
-                      ? "bg-primary text-white"
-                      : "bg-gray-50 hover:bg-blue-500 hover:text-white"
+                      ? "bg-primary text-white border-primary"
+                      : "bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-blue-500 hover:text-white"
                   }`}
                 >
-                  {formatTime(slot.start_time)}
+                  {formatTime12Hour(slot.start_time)}
                 </button>
               ))
             ) : (
-              <div className="col-span-full py-2 text-center text-gray-400 text-sm">
-                Select a date{" "}
+              <div className="col-span-full text-center text-gray-400 dark:text-gray-500 text-sm">
+                Select a date
               </div>
             )}
+
           </div>
 
+          {/* BUTTON */}
           <div className="flex justify-center">
             <button
               onClick={handleBooking}
-              className="w-full md:w-60 py-3 bg-gradient-to-r from-[#1e73be] to-[#155a96] text-white text-sm font-semibold rounded-full shadow-md"
+              className="w-full sm:w-60 py-3 bg-gradient-to-r from-[#1e73be] to-[#155a96] text-white text-sm font-semibold rounded-full shadow-md"
             >
               Book Appointment
             </button>
           </div>
+
         </div>
       </div>
+
     </MainLayout>
   );
 }

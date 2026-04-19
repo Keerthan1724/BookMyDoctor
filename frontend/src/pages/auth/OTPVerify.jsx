@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AuthModal from "../../components/AuthModal";
 import { verifyOTP, sendOTP } from "../../services/authService";
+import { toast } from "../../components/CustomToast";
 
 const OTPVerify = () => {
   const location = useLocation();
@@ -24,7 +25,7 @@ const OTPVerify = () => {
       if (remaining <= 0) {
         clearInterval(timer);
 
-        alert("OTP expired. Please request a new OTP.");
+        toast("OTP expired. Please request a new OTP.", "warning");
 
         navigate("/forgot-password", {
           state: {
@@ -73,12 +74,12 @@ const OTPVerify = () => {
     const finalOtp = otp.join("");
 
     if (!finalOtp) {
-      alert("OTP cannot be empty");
+      toast("OTP cannot be empty", "error");
       return;
     }
 
     if (finalOtp.length !== 6) {
-      alert("OTP must be 6 digits");
+      toast("OTP must be 6 digits", "error");
       return;
     }
 
@@ -89,11 +90,11 @@ const OTPVerify = () => {
       });
 
       if (response?.data?.error) {
-        alert(response.data.error);
+        toast(response.data.error, "error");
         return;
       }
 
-      alert("OTP verified successfully");
+      toast("OTP verified successfully", "success");
 
       navigate("/reset-password", {
         state: {
@@ -105,9 +106,9 @@ const OTPVerify = () => {
       console.error("OTP Verification Error:", error);
 
       if (error.response?.data?.message) {
-        alert(error.response.data.message);
+        toast(error.response.data.message, "error");
       } else {
-        alert("Invalid OTP");
+        toast("Invalid OTP", "error");
       }
     }
   };
@@ -116,7 +117,7 @@ const OTPVerify = () => {
     try {
       await sendOTP({ email });
 
-      alert("New OTP sent");
+      toast("New OTP sent", "success");
 
       const newExpiry = Date.now() + 60000;
 
@@ -129,7 +130,7 @@ const OTPVerify = () => {
       });
     } catch (error) {
       console.error("Resend OTP Error:", error);
-      alert("Failed to resend OTP");
+      toast("Failed to resend OTP", "error");
     }
   };
 

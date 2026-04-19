@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { AuthContext } from "../../context/AuthContext";
 import { updateProfile, deleteAccount } from "../../services/authService";
+import { getAppointments } from "../../services/appointmentService";
 
 import { FiEdit2, FiTrash2, FiLogOut, FiCamera } from "react-icons/fi";
 
@@ -13,6 +14,8 @@ import CropImageModal from "../../components/CropImageModal";
 
 import { toast } from "../../components/CustomToast";
 import { customModal } from "../../services/modalService";
+import Avatar from "../../components/Avatar";
+import { getImageUrl } from "../../utils/media";
 
 const formFields = [
   { label: "Username", name: "username", type: "text", editable: true },
@@ -30,7 +33,7 @@ const formFields = [
 ];
 
 const UserProfile = () => {
-  const { user, setUser, logout, getAvatarColors } = useContext(AuthContext);
+  const { user, setUser, logout } = useContext(AuthContext);
 
   const [form, setForm] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
@@ -45,8 +48,12 @@ const UserProfile = () => {
 
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const avatarStyle = getAvatarColors(user?.username);
+  const [dashboardData, setDashboardData] = useState({
+    totalBookings: 0,
+    totalSpent: 0,
+    upcoming: 0,
+    completed: 0,
+  });
 
   useEffect(() => {
     if (user) {
@@ -60,9 +67,49 @@ const UserProfile = () => {
       });
 
       if (user.profile_image) {
-        const url = `http://localhost:8000${user.profile_image}?t=${Date.now()}`;
+        const url = getImageUrl(user.profile_image, { bustCache: true });
         setPreviewImage(url);
       }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const res = await getAppointments();
+        const appointments = res.data || [];
+
+        let totalSpent = 0;
+        let upcoming = 0;
+        let completed = 0;
+
+        appointments.forEach((appointment) => {
+          if (appointment.payment_status === "PAID" || appointment.status === "COMPLETED") {
+            totalSpent += Number(appointment.fee || 0);
+          }
+
+          if (appointment.status === "PENDING" || appointment.status === "APPROVED") {
+            upcoming += 1;
+          }
+
+          if (appointment.status === "COMPLETED") {
+            completed += 1;
+          }
+        });
+
+        setDashboardData({
+          totalBookings: appointments.length,
+          totalSpent,
+          upcoming,
+          completed,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (user) {
+      fetchDashboardData();
     }
   }, [user]);
 
@@ -140,7 +187,7 @@ const UserProfile = () => {
 
       const res = await updateProfile(formData);
 
-      const url = `http://localhost:8000${res.data.data.profile_image}?t=${Date.now()}`;
+      const url = getImageUrl(res.data.data.profile_image, { bustCache: true });
 
       setUser(res.data.data);
       setPreviewImage(url);
@@ -260,46 +307,37 @@ Are you sure you want to continue?`,
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
-        <h2 className="text-2xl font-bold">Dashboard</h2>
-        <DashboardCard user={user} items={userDashboardItems} />
+      <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8 px-4 py-5 sm:px-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Dashboard
+        </h2>
 
-        <h2 className="text-2xl font-bold">Profile</h2>
+        <DashboardCard user={dashboardData} items={userDashboardItems} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-cardLight dark:bg-cardDark p-8 rounded-xl shadow-lg">
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative w-48 h-48 rounded-full border-4 border-primary flex items-center justify-center">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Profile
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 rounded-xl bg-cardLight dark:bg-cardDark p-4 sm:p-6 md:p-8 shadow-lg">
+          {/* LEFT */}
+          <div className="flex flex-col items-center gap-5 sm:gap-6">
+            <div className="relative w-32 h-32 sm:w-48 sm:h-48 rounded-full border-4 border-primary flex items-center justify-center">
               <div
                 onClick={handleAvatarClick}
                 className="w-full h-full rounded-full overflow-hidden cursor-pointer"
               >
-                {previewImage ? (
-                  <img
-                    src={previewImage}
-                    className="w-full h-full object-cover"
-                    alt="profile"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-7xl font-bold"
-                    style={{
-                      backgroundColor: avatarStyle.bg,
-                      color: avatarStyle.color,
-                    }}
-                  >
-                    {user.username?.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <Avatar
+                  name={user.username}
+                  image={previewImage}
+                  alt="profile"
+                  className="w-full h-full"
+                  textClassName="text-5xl sm:text-7xl font-bold"
+                />
               </div>
 
-              <label className="absolute bottom-2 right-2 bg-primary p-3 rounded-full cursor-pointer text-white shadow-lg border-2 border-white">
+              <label className="absolute bottom-1 right-1 cursor-pointer rounded-full border-2 border-white bg-primary p-2 sm:p-3 text-white shadow-lg dark:border-slate-900">
                 <FiCamera />
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={handleFileSelect}
-                />
+                <input type="file" hidden onChange={handleFileSelect} />
               </label>
             </div>
 
@@ -310,7 +348,7 @@ Are you sure you want to continue?`,
                 <button
                   key={i}
                   onClick={btn.onClick}
-                  className={`w-full py-3 rounded-lg flex justify-center items-center gap-2 ${btn.className}`}
+                  className={`w-full py-2.5 sm:py-3 rounded-lg flex justify-center items-center gap-2 text-sm sm:text-base ${btn.className}`}
                 >
                   <Icon /> {btn.label}
                 </button>
@@ -318,10 +356,13 @@ Are you sure you want to continue?`,
             })}
           </div>
 
+          {/* RIGHT */}
           <div className="md:col-span-2 flex flex-col gap-4">
             {formFields.map((field) => (
-              <div key={field.name} className="flex flex-col gap-2">
-                <label>{field.label}</label>
+              <div key={field.name} className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {field.label}
+                </label>
 
                 {field.type === "select" ? (
                   <select
@@ -330,7 +371,7 @@ Are you sure you want to continue?`,
                       setForm({ ...form, [field.name]: e.target.value })
                     }
                     disabled={!editMode || !field.editable}
-                    className="border p-3 rounded-lg"
+                    className="input"
                   >
                     {field.options.map((opt) => (
                       <option key={opt}>{opt}</option>
@@ -343,7 +384,7 @@ Are you sure you want to continue?`,
                       setForm({ ...form, [field.name]: e.target.value })
                     }
                     disabled={!editMode || !field.editable}
-                    className="border p-3 rounded-lg"
+                    className="input resize-none"
                   />
                 ) : (
                   <input
@@ -353,25 +394,25 @@ Are you sure you want to continue?`,
                       setForm({ ...form, [field.name]: e.target.value })
                     }
                     disabled={!editMode || !field.editable}
-                    className="border p-3 rounded-lg"
+                    className="input"
                   />
                 )}
               </div>
             ))}
 
             {editMode && (
-              <div className="flex gap-4 mt-4">
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleUpdate}
                   disabled={loading}
-                  className="flex-1 bg-primary text-white py-3 rounded-lg"
+                  className="flex-1 bg-primary text-white py-2.5 rounded-lg text-sm sm:text-base"
                 >
                   {loading ? "Updating..." : "Update Profile"}
                 </button>
 
                 <button
                   onClick={() => setEditMode(false)}
-                  className="flex-1 bg-gray-300 py-3 rounded-lg"
+                  className="flex-1 py-2.5 rounded-lg text-sm sm:text-base bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition dark:border"
                 >
                   Cancel
                 </button>

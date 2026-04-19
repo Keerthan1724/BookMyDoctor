@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "./CustomToast";
 
 const DefaultSlotsModal = ({
   formatTime,
@@ -41,14 +42,13 @@ const DefaultSlotsModal = ({
 
     const exists = defaultSlots.some((s) => s.start_time === timeInput);
     if (exists) {
-      alert("Default slot already exists");
+      toast("Default slot already exists", "warning");
       return;
     }
 
-    // ✅ validation added
     const err = validateTime(timeInput);
     if (err) {
-      alert(err);
+      toast(err, "error");
       return;
     }
 
@@ -61,7 +61,7 @@ const DefaultSlotsModal = ({
     setDefaultSlots(updated);
     localStorage.setItem("default_slots", JSON.stringify(updated));
 
-    alert("Default slot added");
+    toast("Default slot added", "success");
     setTimeInput("");
   };
 
@@ -76,11 +76,16 @@ const DefaultSlotsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-xl w-[380px] space-y-4 max-h-[500px] overflow-y-auto">
-        <div className="flex justify-between">
-          <h3 className="font-semibold">Default Slots</h3>
-          <button onClick={closeDefaultPopup}>✕</button>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center p-4 z-50">
+      <div className="surface-elevated w-full max-w-sm p-5 rounded-xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold text-lg">Default Slots</h3>
+          <button
+            onClick={closeDefaultPopup}
+            className="text-slate-500 hover:text-slate-900"
+          >
+            ×
+          </button>
         </div>
 
         {[...defaultSlots]
@@ -88,14 +93,14 @@ const DefaultSlotsModal = ({
           .map((s, i) => (
             <div
               key={i}
-              className="bg-blue-50 px-2 py-1 rounded flex justify-between items-center"
+              className="bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg flex justify-between items-center"
             >
               <span>{formatTime(s.start_time)}</span>
               <button
                 onClick={() => handleDeleteSlot(i)}
-                className="text-red-500 text-xs"
+                className="text-red-500 text-sm"
               >
-                ✕
+                ×
               </button>
             </div>
           ))}
@@ -105,11 +110,11 @@ const DefaultSlotsModal = ({
             type="time"
             value={timeInput}
             onChange={(e) => setTimeInput(e.target.value)}
-            className="border px-2 py-1 w-full rounded"
+            className="border rounded-lg px-3 py-2 w-full bg-transparent"
           />
           <button
             onClick={addDefaultSlot}
-            className="bg-blue-500 text-white px-3 rounded"
+            className="bg-blue-500 text-white px-4 rounded-lg"
           >
             +
           </button>
@@ -117,7 +122,7 @@ const DefaultSlotsModal = ({
 
         <button
           onClick={handleApply}
-          className="w-full bg-blue-500 text-white py-2 rounded"
+          className="w-full bg-blue-500 text-white py-2.5 rounded-lg"
         >
           Apply Default
         </button>

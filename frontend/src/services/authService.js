@@ -12,6 +12,10 @@ export const getProfile = () => {
   return API.get("profile/");
 };
 
+export const getUsers = () => {
+  return API.get("users/");
+};
+
 export const updateProfile = (data) => {
   return API.patch("profile/", data, {
     headers: {
@@ -20,8 +24,20 @@ export const updateProfile = (data) => {
   });
 };
 
+export const updateUser = (id, data) => {
+  return API.patch(`users/${id}/`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 export const deleteAccount = () => {
   return API.delete("profile/");
+};
+
+export const deleteUser = (id) => {
+  return API.delete(`users/${id}/`);
 };
 
 export const sendOTP = (data) => {

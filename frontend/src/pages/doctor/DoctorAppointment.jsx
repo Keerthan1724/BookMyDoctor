@@ -7,6 +7,8 @@ import {
   updateAppointment,
   cancelAppointment,
 } from "../../services/appointmentService";
+import Avatar from "../../components/Avatar";
+import { formatDateCompact, formatTime12Hour } from "../../utils/formatters";
 
 const DoctorAppointment = () => {
   const [appointments, setAppointments] = useState([]);
@@ -67,35 +69,6 @@ const DoctorAppointment = () => {
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return "";
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
-    const year = String(d.getFullYear()).slice(-2);
-    return `${day}-${month}-${year}`;
-  };
-
-  const formatTime = (time) => {
-    if (!time) return "";
-    let [h, m] = time.split(":");
-    h = parseInt(h);
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${m} ${ampm}`;
-  };
-
-  const getAvatarColor = (username) => {
-    const styles = [
-      { bg: "#6c5ce7" },
-      { bg: "#0984e3" },
-      { bg: "#00b894" },
-      { bg: "#e84393" },
-    ];
-    if (!username) return styles[0];
-    return styles[username.charCodeAt(0) % styles.length];
-  };
-
   const filteredAppointments = appointments.filter((appt) => {
     if (filter === "ALL") return true;
     if (filter === "REQUESTS") return appt.status === "PENDING";
@@ -107,17 +80,21 @@ const DoctorAppointment = () => {
 
   return (
     <AdminLayout sidebarItems={doctorSidebar}>
-      <div className="px-8 py-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Appointments</h1>
+      <div className="px-3 sm:px-6 md:px-8 py-4 sm:py-6 max-w-6xl mx-auto">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6">
+          Appointments
+        </h1>
 
         {/* FILTER */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-5 sm:mb-6">
           {["ALL", "REQUESTS", "ACTIVE", "HISTORY"].map((item) => (
             <button
               key={item}
               onClick={() => setFilter(item)}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                filter === item ? "bg-blue-600 text-white" : "bg-gray-200"
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium border theme-border ${
+                filter === item
+                  ? "bg-primary text-white"
+                  : "bg-white dark:bg-slate-800 theme-text-muted"
               }`}
             >
               {item}
@@ -127,89 +104,81 @@ const DoctorAppointment = () => {
 
         {/* LIST */}
         {loading ? (
-          <p>Loading...</p>
+          <p className="theme-text-muted">Loading...</p>
         ) : filteredAppointments.length === 0 ? (
-          <p className="text-center text-xl font-medium">No appointments</p>
+          <p className="text-center text-base sm:text-lg font-medium theme-text-muted">
+            No appointments
+          </p>
         ) : (
-          <div>
+          <div className="space-y-4">
             {filteredAppointments.map((appt) => (
               <div
                 key={appt.id}
-                className="relative flex items-center justify-between border rounded-xl px-6 py-5 bg-white shadow-sm mb-4 min-h-[110px]"
+                className="relative surface-card p-4 sm:p-5 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0"
               >
-                {/* 🔥 STATUS BADGE FIXED */}
+                {/* STATUS */}
                 <span
-                  className={`absolute top-3 right-4 text-xs px-3 py-1 rounded-full font-semibold ${
+                  className={`absolute top-2 right-2 sm:top-3 sm:right-4 text-xs w-24 text-center py-1 rounded-full font-semibold ${
                     appt.status === "PENDING"
                       ? "bg-yellow-100 text-yellow-700"
                       : appt.status === "APPROVED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-200 text-gray-700"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                   }`}
                 >
                   {appt.status}
                 </span>
 
                 {/* LEFT */}
-                <div className="flex items-center gap-5 w-1/3">
-                  {appt.patient?.profile_image ? (
-                    <img
-                      src={
-                        appt.patient.profile_image.startsWith("http")
-                          ? appt.patient.profile_image
-                          : `http://localhost:8000${appt.patient.profile_image}`
-                      }
-                      alt=""
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-white"
-                      style={{
-                        backgroundColor: getAvatarColor(appt.patient?.username)
-                          .bg,
-                      }}
-                    >
-                      {appt.patient?.username?.[0]?.toUpperCase() || "P"}
-                    </div>
-                  )}
+                <div className="flex items-center gap-3 sm:gap-5 md:w-1/3">
+                  <Avatar
+                    name={appt.patient?.username}
+                    image={appt.patient?.profile_image}
+                    className="w-10 h-10 sm:w-12 sm:h-12"
+                    textClassName="text-sm sm:text-base font-semibold"
+                  />
 
                   <div>
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-sm sm:text-base">
                       {appt.patient?.username}
                     </p>
-                    <p className="text-sm text-black">
+                    <p className="text-xs sm:text-sm theme-text-muted">
                       {appt.patient?.age || "N/A"} yrs
                     </p>
-                    <p className="text-sm text-black">
+                    <p className="text-xs sm:text-sm theme-text-muted">
                       {appt.patient?.gender || "N/A"}
                     </p>
                   </div>
                 </div>
 
                 {/* MIDDLE */}
-                <div className="w-1/3 flex flex-col text-center justify-center">
-                  <p className="font-semibold text-gray-800">
-                    {formatDate(appt.slot?.date)}
+                <div className="md:w-1/3 flex flex-col md:items-center text-left md:text-center">
+                  <p className="font-semibold text-sm sm:text-base">
+                    {formatDateCompact(appt.slot?.date)}
                   </p>
-                  <p className="text-green-700 font-bold">
-                    {formatTime(appt.slot?.start_time)}
+                  <p className="text-green-600 font-semibold text-sm sm:text-base">
+                    {formatTime12Hour(appt.slot?.start_time)}
                   </p>
+                  {appt.payment_status === "PAID" && (
+                    <span className="mt-1 inline-flex w-fit rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">
+                      Paid
+                    </span>
+                  )}
                 </div>
 
                 {/* RIGHT */}
-                <div className="w-1/3 flex flex-col items-end gap-2 mt-8">
+                <div className="md:w-1/3 flex flex-wrap md:flex-col md:items-end gap-2 mt-2 md:mt-6">
                   {appt.status === "PENDING" && (
                     <>
                       <button
                         onClick={() => handleApprove(appt.id)}
-                        className="w-28 h-9 bg-green-600 text-white rounded-md text-sm font-medium"
+                        className="px-3 sm:px-4 h-9 bg-green-600 text-white text-xs sm:text-sm rounded-lg"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(appt.id)}
-                        className="w-28 h-9 border border-red-500 text-red-600 rounded-md text-sm font-medium"
+                        className="px-3 sm:px-4 h-9 border border-red-500 text-red-600 text-xs sm:text-sm rounded-lg"
                       >
                         Reject
                       </button>
@@ -220,13 +189,13 @@ const DoctorAppointment = () => {
                     <>
                       <button
                         onClick={() => handleComplete(appt.id)}
-                        className="w-28 h-9 bg-blue-600 text-white rounded-md text-sm font-medium"
+                        className="px-3 sm:px-4 h-9 bg-blue-600 text-white text-xs sm:text-sm rounded-lg"
                       >
                         Completed
                       </button>
                       <button
                         onClick={() => handleCancel(appt.id)}
-                        className="w-28 h-9 border border-red-500 text-red-600 rounded-md text-sm font-medium"
+                        className="px-3 sm:px-4 h-9 border border-red-500 text-red-600 text-xs sm:text-sm rounded-lg"
                       >
                         Cancel
                       </button>
@@ -240,7 +209,7 @@ const DoctorAppointment = () => {
                           state: { background: location, appointment: appt },
                         })
                       }
-                      className="w-28 h-9 bg-blue-600 text-white rounded-md text-sm font-medium"
+                      className="px-3 sm:px-4 h-9 bg-blue-600 text-white text-xs sm:text-sm rounded-lg"
                     >
                       View Review
                     </button>

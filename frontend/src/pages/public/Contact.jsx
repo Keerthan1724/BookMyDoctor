@@ -42,36 +42,44 @@ const Contact = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="text-center mb-12">
-          <p className="mt-4 text-textLight dark:text-textDark">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="text-center mb-8 sm:mb-12">
+          <p className="mt-3 text-sm sm:text-base text-textLight dark:text-textDark">
             Have questions or need help? Reach out to us anytime.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 bg-cardLight dark:bg-cardDark p-8 rounded-xl shadow-lg">
-          <div className="flex flex-col gap-6">
-            <h2 className="text-2xl font-semibold">Get in Touch</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 bg-cardLight dark:bg-cardDark p-5 sm:p-8 rounded-xl shadow-lg">
+          
+          {/* LEFT */}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
+              Get in Touch
+            </h2>
 
-            <p className="text-textLight dark:text-textDark">
+            <p className="text-sm sm:text-base text-textLight dark:text-textDark">
               We’re here to help you with booking appointments, finding the
               right doctors, and resolving any issues.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {contactInfo.map((item, idx) => {
                 const Icon = item.icon;
                 return (
-                  <div key={idx} className="flex items-center gap-3">
-                    {Icon && <Icon className="text-primary text-xl" />}
+                  <div key={idx} className="flex items-start gap-3">
+                    {Icon && (
+                      <Icon className="text-primary text-lg sm:text-xl mt-1" />
+                    )}
                     <div>
-                      <p className="font-medium">{item.title}</p>
+                      <p className="font-medium text-sm sm:text-base text-gray-800 dark:text-white">
+                        {item.title}
+                      </p>
                       <p
-                        className={
+                        className={`text-xs sm:text-sm ${
                           item.isPrimary
                             ? "text-primary"
                             : "text-textLight dark:text-textDark"
-                        }
+                        }`}
                       >
                         {item.value}
                       </p>
@@ -82,29 +90,34 @@ const Contact = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {/* RIGHT */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
             {formFields.map((field) => (
               <div key={field.name}>
-                <label className="block mb-1">{field.label}</label>
+                <label className="block mb-1 text-sm text-gray-700 dark:text-gray-300">
+                  {field.label}
+                </label>
                 <input
                   type={field.type}
                   name={field.name}
                   value={form[field.name]}
                   onChange={handleChange}
-                  className="w-full border p-3 rounded-lg bg-transparent"
+                  className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent text-sm sm:text-base"
                   placeholder={field.placeholder}
                 />
               </div>
             ))}
 
             <div>
-              <label className="block mb-1">Message</label>
+              <label className="block mb-1 text-sm text-gray-700 dark:text-gray-300">
+                Message
+              </label>
               <textarea
                 name="message"
                 rows="5"
                 value={form.message}
                 onChange={handleChange}
-                className="w-full border p-3 rounded-lg bg-transparent resize-none"
+                className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent resize-none text-sm sm:text-base"
                 placeholder="Write your message..."
               />
             </div>
@@ -112,7 +125,7 @@ const Contact = () => {
             <button
               type="submit"
               disabled={loading}
-              className="bg-primary text-white py-3 rounded-lg mt-2"
+              className="bg-primary text-white py-2 sm:py-3 rounded-lg mt-2 text-sm sm:text-base"
             >
               {loading ? "Sending..." : "Send Message"}
             </button>

@@ -13,11 +13,16 @@ export const addDoctor = (data) => {
 };
 
 export const updateDoctor = (id, data) => {
-  return API.patch(`doctors/${id}/`, data, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const config =
+    data instanceof FormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : undefined;
+
+  return API.patch(`doctors/${id}/`, data, config);
 };
 
 export const deleteDoctor = (id) => {

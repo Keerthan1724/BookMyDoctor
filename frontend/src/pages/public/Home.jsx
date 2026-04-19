@@ -8,17 +8,13 @@ import Reviews from "../../components/home/Reviews";
 function Home() {
   return (
     <MainLayout>
-
-      <Banner />
-
-      <SpecialityFilter />
-
-      <TopDoctors />
-
-      <Reviews />
-
-      <AppStats />
-
+      <div>
+        <Banner />
+        <SpecialityFilter />
+        <TopDoctors />
+        <Reviews />
+        <AppStats />
+      </div>
     </MainLayout>
   );
 }

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import AuthModal from "../../components/AuthModal";
 import { resetPassword } from "../../services/authService";
+import { toast } from "../../components/CustomToast";
 
 const ResetPassword = () => {
   const location = useLocation();
@@ -26,12 +27,12 @@ const ResetPassword = () => {
 
     const pwdError = validatePassword(password);
     if (pwdError) {
-      alert(pwdError);
+      toast(pwdError, "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast("Passwords do not match", "error");
       return;
     }
 
@@ -45,11 +46,11 @@ const ResetPassword = () => {
       });
 
       if (response?.data?.error) {
-        alert(response.data.error);
+        toast(response.data.error, "error");
         return;
       }
 
-      alert("Password reset successful");
+      toast("Password reset successful", "success");
       navigate("/login", {
         state: {
           background: location.state?.background || location,
@@ -57,7 +58,7 @@ const ResetPassword = () => {
       });
     } catch (err) {
       console.error("Reset Password Error:", err);
-      alert("Something went wrong. Please try again.");
+      toast("Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }

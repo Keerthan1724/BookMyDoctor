@@ -16,7 +16,7 @@ const fields = [
   { label: "Experience", name: "experience", type: "text", half: true },
   { label: "Contact No", name: "contact_no", type: "text", half: true },
   { label: "City", name: "city", type: "text", half: true },
-  { label: "Consultation Fee", name: "consultation_fee", type: "text", half: true,},
+  { label: "Consultation Fee", name: "consultation_fee", type: "text", half: true },
   { label: "Clinic Name", name: "clinic_name", type: "text", half: true },
   { label: "Clinic Address", name: "clinic_address", type: "text", full: true },
   { label: "About", name: "about", type: "textarea", full: true },
@@ -98,17 +98,19 @@ const AddDoctor = () => {
 
   return (
     <AdminLayout sidebarItems={adminSidebar}>
-      {" "}
-      <div className="p-10">
-        {" "}
-        <div className="max-w-5xl mx-auto bg-white shadow-md rounded-xl p-8">
-          <h2 className="text-xl font-semibold mb-6">Add Doctor</h2>
+      <div className="p-3 sm:p-6 md:p-10">
+        <div className="max-w-5xl mx-auto surface-card p-4 sm:p-6 md:p-8">
+          
+          <h2 className="text-lg sm:text-xl font-semibold mb-6">
+            Add Doctor
+          </h2>
 
-          <div className="mb-8">
+          {/* Image Upload */}
+          <div className="mb-8 flex flex-col items-start">
             <label className="label">Profile Picture</label>
 
             <div
-              className="w-40 h-40 border flex items-center justify-center cursor-pointer bg-gray-50 overflow-hidden"
+              className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 theme-border border flex items-center justify-center cursor-pointer bg-slate-50 dark:bg-slate-900 overflow-hidden rounded-xl"
               onClick={() => previewImage && setPreviewModal(true)}
             >
               {previewImage ? (
@@ -117,35 +119,39 @@ const AddDoctor = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <img src={upload_area} className="w-full h-full object-cover" />
+                <img
+                  src={upload_area}
+                  className="w-full h-full object-cover opacity-80"
+                />
               )}
             </div>
 
-            <label className="flex text-sm text-gray-500 cursor-pointer mt-2">
-              <FiUpload className="mr-3" />
+            <label className="flex items-center text-xs sm:text-sm theme-text-muted cursor-pointer mt-3">
+              <FiUpload className="mr-2 sm:mr-3" />
               Upload Image
               <input type="file" hidden onChange={handleFileSelect} />
             </label>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
+          {/* Form Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {fields.map((field) => {
               if (field.name === "about") {
                 return (
-                  <div key={field.name} className="col-span-2 mt-4">
+                  <div key={field.name} className="col-span-1 sm:col-span-2 mt-2 sm:mt-4">
                     <label className="label">{field.label}</label>
                     <textarea
                       name={field.name}
                       value={form[field.name] || ""}
                       onChange={handleChange}
-                      className="input resize-none h-28"
+                      className="input resize-none h-24 sm:h-28"
                       placeholder={`Enter ${field.label}`}
                     />
                   </div>
                 );
               }
 
-              const colClass = field.full ? "col-span-2" : "";
+              const colClass = field.full ? "col-span-1 sm:col-span-2" : "";
 
               return (
                 <div key={field.name} className={colClass}>
@@ -163,14 +169,16 @@ const AddDoctor = () => {
             })}
           </div>
 
+          {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            className="w-full mt-8 bg-primary text-white py-2 rounded-md"
+            className="w-full mt-6 sm:mt-8 bg-primary hover:bg-primaryDark transition-colors text-white py-2.5 rounded-xl text-sm sm:text-base"
           >
             {loading ? "Adding..." : "Add Doctor"}
           </button>
         </div>
       </div>
+
       {previewModal && (
         <ImagePreviewModal
           previewImage={previewImage}

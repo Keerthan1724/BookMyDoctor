@@ -3,6 +3,7 @@ import AuthModal from "../../components/AuthModal";
 import { sendOTP } from "../../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
 import { customModal } from "../../services/modalService";
+import { toast } from "../../components/CustomToast";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -17,11 +18,11 @@ const ForgotPassword = () => {
 
   const handleSendOTP = async () => {
     if (!email) {
-      alert("Email field cannot be empty");
+      toast("Email field cannot be empty", "error");
       return;
     }
     if (!validateEmail(email)) {
-      alert("Enter a valid email address");
+      toast("Enter a valid email address", "error");
       return;
     }
 
@@ -30,11 +31,11 @@ const ForgotPassword = () => {
       const response = await sendOTP({ email });
 
       if (response?.data?.message) {
-        alert(response.data.message);
+        toast(response.data.message, "success");
         return;
       }
 
-      alert(`OTP ${isResend ? "resent" : "sent"} to your email`);
+      toast(`OTP ${isResend ? "resent" : "sent"} to your email`, "success");
 
       const expiresAt = Date.now() + 60000;
 
@@ -63,7 +64,7 @@ const ForgotPassword = () => {
           primaryBtnText: "Okay",
         });
       } else {
-        alert(backendError || "Something went wrong");
+        toast(backendError || "Something went wrong", "error");
       }
     } finally {
       setLoading(false);

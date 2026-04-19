@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import { getProfile } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "../utils/media";
 
 export const AuthContext = createContext();
 
@@ -70,17 +71,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getAvatar = () => {
-  if (!user) return null;
-
-  if (user.profile_image) {
-    if (user.profile_image.startsWith("http")) {
-      return `${user.profile_image}?t=${Date.now()}`;
-    }
-    return `http://localhost:8000${user.profile_image}?t=${Date.now()}`;
-  }
-
-  return null;
-};
+    if (!user?.profile_image) return null;
+    return getImageUrl(user.profile_image, { bustCache: true });
+  };
 
   return (
     <AuthContext.Provider

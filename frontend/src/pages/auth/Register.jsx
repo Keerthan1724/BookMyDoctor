@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import AuthModal from "../../components/AuthModal";
 import { registerUser } from "../../services/authService";
+import { toast } from "../../components/CustomToast";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -37,13 +38,14 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.username.trim()) return alert("Name cannot be empty");
-    if (!form.email) return alert("Email cannot be empty");
-    if (!validateEmail(form.email)) return alert("Enter a valid email");
+    if (!form.username.trim()) return toast("Name cannot be empty", "error");
+    if (!form.email) return toast("Email cannot be empty", "error");
+    if (!validateEmail(form.email)) return toast("Enter a valid email", "error");
 
     const pwdError = validatePassword(form.password);
-    if (pwdError) return alert(pwdError);
-    if (form.password !== form.confirmPassword) return alert("Passwords do not match");
+    if (pwdError) return toast(pwdError, "error");
+    if (form.password !== form.confirmPassword)
+      return toast("Passwords do not match", "error");
 
     try {
       setLoading(true);
@@ -52,11 +54,11 @@ const Register = () => {
         email: form.email,
         password: form.password,
       });
-      alert(res.data.message || "Registration successful");
+      toast(res.data.message || "Registration successful", "success");
       navigate("/login", { state: { background: location.state?.background || location } });
     } catch (error) {
       console.error("Register Error:", error);
-      alert(error.response?.data?.message || "Registration failed");
+      toast(error.response?.data?.message || "Registration failed", "error");
     } finally {
       setLoading(false);
     }

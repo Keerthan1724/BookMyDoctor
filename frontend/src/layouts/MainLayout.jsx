@@ -3,11 +3,9 @@ import Navbar from "../components/Navbar";
 
 function MainLayout({ children }) {
   return (
-    <div className="bg-bgLight dark:bg-cardDark flex flex-col min-h-screen">
+    <div className="app-shell flex min-h-screen flex-col">
       <Navbar />
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </div>
   );

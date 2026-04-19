@@ -22,6 +22,7 @@ from .serializers import (UserRegisterSerializer,
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsAdmin, IsDoctor
 from .models import (DoctorProfile,
+                     User,
                      Availability, 
                      Appointment, 
                      Payment, 
@@ -31,7 +32,7 @@ from django.conf import settings
 import stripe
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Avg, Count
 
 
@@ -114,12 +115,18 @@ class ProfileAPIView(APIView):
             "message": "Account deleted successfully"
         }, status=status.HTTP_200_OK)
 
+class UserViewSet(ModelViewSet):
+    queryset = User.objects.filter(role="USER").order_by("-created_at")
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAdmin]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
 class DoctorViewSet(ModelViewSet):
 
     def get_queryset(self):
-        queryset = DoctorProfile.objects.filter(is_active=True).annotate(
-            average_rating=Avg("availabilities__appointment__review__rating"),
-            total_reviews=Count("availabilities__appointment__review")
+        queryset = DoctorProfile.objects.annotate(
+            actual_average_rating=Avg("availabilities__appointment__review__rating"),
+            actual_total_reviews=Count("availabilities__appointment__review")
         ).select_related("user")
 
         user = self.request.user
@@ -168,7 +175,11 @@ class AvailabilityViewSet(ModelViewSet):
         doctor_id = self.request.query_params.get("doctor")
 
         if doctor_id:
-            return Availability.objects.filter(doctor_id=doctor_id)
+            return Availability.objects.filter(
+                doctor_id=doctor_id,
+                is_available=True,
+                is_held=False,
+            ).order_by("date", "start_time")
         
         if self.request.user.is_authenticated and self.request.user.role == "DOCTOR":
             return Availability.objects.filter(
@@ -198,6 +209,7 @@ class AvailabilityViewSet(ModelViewSet):
 class AppointmentViewSet(ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser]
 
     def get_queryset(self):
         user = self.request.user
@@ -353,15 +365,20 @@ class CreateStripeCheckoutSessionAPIView(APIView):
         appointment = serializer.validated_data["appointment"]
 
         try:
+            PLATFORM_FEE = 100
+
+            total_amount = appointment.fee + PLATFORM_FEE
+
             session = stripe.checkout.Session.create(
                 payment_method_types=["card"],
                 line_items=[{
                     "price_data": {
                         "currency": "inr",
                         "product_data": {
-                            "name": "Doctor Appointment",
+                            "name": f"{appointment.slot.doctor.user.username} Appointment",
+                            "description": f"Includes ₹{PLATFORM_FEE} platform fee",
                         },
-                        "unit_amount": int(appointment.fee * 100),
+                        "unit_amount": int(total_amount * 100),
                     },
                     "quantity": 1,
                 }],
@@ -369,7 +386,8 @@ class CreateStripeCheckoutSessionAPIView(APIView):
                 success_url="http://localhost:5173/payment-success",
                 cancel_url="http://localhost:5173/appointmenthistory",
                 metadata={
-                    "appointment_id": appointment.id
+                    "appointment_id": appointment.id,
+                    "platform_fee": PLATFORM_FEE,
                 }
             )
 

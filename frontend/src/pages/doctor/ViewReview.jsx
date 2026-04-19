@@ -17,7 +17,7 @@ const ViewReview = () => {
   }, [id]);
 
   const fetchReview = async () => {
-    setLoading(true); // 👈 ensure loading starts properly
+    setLoading(true);
 
     try {
       const res = await getReviews();
@@ -37,46 +37,55 @@ const ViewReview = () => {
       setReview(null);
     }
 
-    setLoading(false); // 👈 move outside finally (safer)
+    setLoading(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm p-7 rounded-xl shadow-lg relative min-h-[420px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-3">
+      
+      {/* CARD */}
+      <div className="surface-card w-full max-w-sm sm:max-w-md p-5 sm:p-6 md:p-7 rounded-xl shadow-lg relative min-h-[360px] sm:min-h-[420px]">
+        
         {/* CLOSE */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-3 right-3 text-gray-500 text-lg"
+          className="absolute top-3 right-3 text-slate-500 dark:text-slate-300 text-lg hover:opacity-70"
         >
           ✕
         </button>
 
         {/* TITLE */}
-        <h2 className="text-xl font-semibold text-center mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-center mb-5 sm:mb-6">
           Patient Review
         </h2>
 
         {loading ? (
-          <p className="text-center mt-10">Loading...</p>
+          <p className="text-center mt-8 sm:mt-10 theme-text-muted">
+            Loading...
+          </p>
         ) : !review ? (
-          <p className="text-center mt-10 text-gray-500">
+          <p className="text-center mt-8 sm:mt-10 theme-text-muted text-sm sm:text-base">
             No review or rating given for this appointment
           </p>
         ) : (
           <>
-            {/* ⭐ STARS (READ ONLY) */}
-            <div className="flex justify-center gap-3 mb-6">
+            {/* ⭐ STARS */}
+            <div className="flex justify-center gap-2 sm:gap-3 mb-5 sm:mb-6">
               {[1, 2, 3, 4, 5].map((star) => {
                 const isActive = review.rating >= star;
 
                 return (
                   <span
                     key={star}
-                    className={`text-4xl ${
-                      isActive ? "text-yellow-400" : "text-transparent"
+                    className={`text-3xl sm:text-4xl ${
+                      isActive
+                        ? "text-yellow-400"
+                        : "text-transparent"
                     }`}
                     style={{
-                      WebkitTextStroke: isActive ? "0px" : "2px #d1d5db",
+                      WebkitTextStroke: isActive
+                        ? "0px"
+                        : "2px #94a3b8", // better for dark theme
                     }}
                   >
                     ★
@@ -89,8 +98,8 @@ const ViewReview = () => {
             <textarea
               value={review.review_text}
               readOnly
-              className="w-full border rounded-lg p-3 resize-none bg-gray-100 focus:outline-none"
-              rows={8}
+              rows={6}
+              className="w-full border theme-border rounded-lg p-3 text-sm sm:text-base resize-none bg-slate-50 dark:bg-slate-800 focus:outline-none"
             />
           </>
         )}
