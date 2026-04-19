@@ -2,7 +2,7 @@ import { useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { toast } from "../../components/CustomToast";
 import { contactInfo, formFields } from "../../data/contactData";
-import axios from "axios";
+import API from "../../services/api";
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -30,7 +30,7 @@ const Contact = () => {
 
     try {
       setLoading(true);
-      await axios.post("/api/contact/", form);
+      await API.post("/contact/", form);
       toast("Message sent successfully", "success");
       setForm({ name: "", email: "", message: "" });
     } catch (err) {

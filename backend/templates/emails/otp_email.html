@@ -1,0 +1,7 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Your OTP Code</h2>
+<p>Use the OTP below to continue:</p>
+<h1 style="text-align:center;">{{ otp }}</h1>
+<p>This OTP is valid for 1 minute.</p>
+{% endblock %}

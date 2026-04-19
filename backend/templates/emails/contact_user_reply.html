@@ -1,0 +1,15 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Hello {{ name }},</h2>
+
+<p>Thanks for contacting <strong>BookMyDoctor</strong> 🩺</p>
+
+<p>We have received your message and our team will get back to you within 24 hours.</p>
+
+<h3>Your Message:</h3>
+<p style="background:#f5f5f5;padding:10px;border-radius:5px;">
+  {{ message }}
+</p>
+
+<p>Regards,<br/>BookMyDoctor Team</p>
+{% endblock %}

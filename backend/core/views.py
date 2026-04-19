@@ -34,6 +34,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Avg, Count
+from utils.email_service import send_html_email
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -46,6 +47,12 @@ class RegisterAPIView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            send_html_email(
+                "Welcome to BookMyDoctor",
+                "emails/user_welcome.html",
+                {"username": user.username},
+                user.email
+            )
 
             return Response(
                 {"message": "User registered successfully"},
@@ -421,33 +428,22 @@ class ContactAPIView(APIView):
         data = serializer.validated_data
 
         try:
-            send_mail(
-                subject=f"New Contact from {data['name']}",
-                message=f"Name: {data['name']}\nEmail: {data['email']}\n\nMessage:\n{data       ['message']}",
-                from_email=None,
-                recipient_list=["bookmydoctor.app2026@gmail.com"],
+            send_html_email(
+                "New Contact Message",
+                "emails/contact_admin.html",
+                data,
+                "bookmydoctor.app2026@gmail.com"
             )
 
-            send_mail(
+            send_html_email(
                 subject="We received your message - BookMyDoctor",
-                message=f"""
-                    Hi {data['name']},
-
-                    Thanks for contacting BookMyDoctor 🩺
-
-                    We have received your message and our team will get back to you within 24 hours.
-
-                    Here is a copy of your message:
-                    -------------------------
-                    {data['message']}
-                    -------------------------
-
-                    Regards,  
-                    BookMyDoctor Team
-                    """,
-                from_email=None,
-                recipient_list=[data["email"]],
-            )
+                template="emails/contact_user_reply.html",
+                context={
+                    "name": data["name"],
+                    "message": data["message"],
+                },
+                to_email=data["email"],
+            )   
 
             return Response(
                 {"message": "Message sent successfully"},

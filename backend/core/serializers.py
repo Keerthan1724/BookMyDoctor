@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
 import random
+from utils.email_service import send_html_email
+
 from .models import (User, 
                      DoctorProfile, 
                      Availability, 
@@ -149,6 +151,19 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
             user=user,
             is_active=True,  
             **validated_data
+        )
+
+        send_html_email(
+            "Your Doctor Account is Ready",
+            "emails/doctor_account_created.html",
+            {
+                "username": username,
+                "email": email,
+                "password": password,
+                "specialization": validated_data["specialization"],
+                "clinic": validated_data["clinic_name"],
+            },
+            email
         )
 
         return doctor_profile
@@ -402,6 +417,19 @@ class AppointmentSerializer(serializers.ModelSerializer):
             slot.is_available = False
             slot.save()
 
+            send_html_email(
+                "Appointment Booked",
+                "emails/appointment_booked.html",
+                {
+                    "username": user.username,
+                    "doctor": slot.doctor.user.username,
+                    "date": slot.date,
+                    "time": slot.start_time,
+                    "clinic": slot.doctor.clinic_name,
+                },
+                user.email
+            )
+
         return appointment
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -467,6 +495,13 @@ class SendOTPSerializer(serializers.Serializer):
 
         otp_code = otp_instance.generate_otp()
         print("OTP:", otp_code)
+
+        send_html_email(
+            "Your OTP Code",
+            "emails/otp_email.html",
+            {"otp": otp_code},
+            user.email
+        )
 
         return {"message": "OTP sent successfully."}
     
@@ -556,6 +591,13 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         otp_instance.is_used = True
         otp_instance.save()
+
+        send_html_email(
+            "Password Changed Successfully",
+            "emails/password_reset_success.html",
+            {"username": user.username},
+            user.email
+        )
 
         return {"message": "Password reset successful."}
 

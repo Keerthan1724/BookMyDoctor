@@ -1,0 +1,18 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Doctor Account Created</h2>
+
+<p>Hello Dr. {{ username }},</p>
+
+<p>An account has been created for you by BookMyDoctor Admin.</p>
+
+<ul>
+<li><strong>Email:</strong> {{ email }}</li>
+<li><strong>Password:</strong> {{ password }}</li>
+<li><strong>Specialization:</strong> {{ specialization }}</li>
+<li><strong>Clinic:</strong> {{ clinic }}</li>
+</ul>
+
+<p style="color:red;"><strong>Important:</strong> Please do not share your login credentials with anyone.</p>
+
+{% endblock %}

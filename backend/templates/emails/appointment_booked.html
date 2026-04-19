@@ -1,0 +1,15 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Appointment Booked ✅</h2>
+
+<p>Hello {{ username }},</p>
+
+<p>Your appointment has been booked with Dr. {{ doctor }}.</p>
+
+<ul>
+<li>Date: {{ date }}</li>
+<li>Time: {{ time }}</li>
+<li>Clinic: {{ clinic }}</li>
+</ul>
+
+{% endblock %}
