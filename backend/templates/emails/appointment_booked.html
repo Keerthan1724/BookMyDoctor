@@ -1,15 +1,65 @@
-{% extends "emails/base.html" %}
-{% block content %}
-<h2>Appointment Booked ✅</h2>
+{% extends "emails/base.html" %} {% block content %}
+<h2>✅ Appointment Confirmed</h2>
 
-<p>Hello {{ username }},</p>
+<p>Dear {{ username }},</p>
 
-<p>Your appointment has been booked with Dr. {{ doctor }}.</p>
+<p>
+  Your appointment has been successfully booked! Here are the details of your
+  upcoming consultation:
+</p>
 
+<div class="highlight">
+  <h3 style="margin-top: 0; color: #1e40af">Appointment Details</h3>
+  <table class="info-table">
+    <tr>
+      <th>Doctor</th>
+      <td>Dr. {{ doctor }}</td>
+    </tr>
+    <tr>
+      <th>Specialization</th>
+      <td>{{ specialization }}</td>
+    </tr>
+    <tr>
+      <th>Date</th>
+      <td>{{ date }}</td>
+    </tr>
+    <tr>
+      <th>Time</th>
+      <td>{{ time }}</td>
+    </tr>
+    <tr>
+      <th>Clinic</th>
+      <td>{{ clinic }}</td>
+    </tr>
+    <tr>
+      <th>Consultation Fee</th>
+      <td>₹{{ fee }}</td>
+    </tr>
+  </table>
+</div>
+
+<h3>Important Instructions</h3>
 <ul>
-<li>Date: {{ date }}</li>
-<li>Time: {{ time }}</li>
-<li>Clinic: {{ clinic }}</li>
+  <li>Please arrive 15 minutes before your scheduled appointment time</li>
+  <li>Bring any relevant medical records or test reports</li>
+  <li>
+    If you need to reschedule or cancel, please do so at least 24 hours in
+    advance
+  </li>
+  <li>Payment will be collected at the clinic or you can pay online once after doctor approval for this appointment</li>
 </ul>
 
+<p>
+  We recommend you add this appointment to your calendar and set a reminder. If
+  you have any questions, feel free to contact us.
+</p>
+
+<p>
+  Thank you for choosing BookMyDoctor. We wish you a successful consultation!
+</p>
+
+<p style="margin-bottom: 0">
+  Best regards,<br />
+  <strong>The BookMyDoctor Team</strong>
+</p>
 {% endblock %}

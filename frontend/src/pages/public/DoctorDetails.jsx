@@ -147,14 +147,20 @@ function DoctorDetails() {
     );
   }
 
+  const doctorName = doctor.username || "Doctor";
+  const specialization = doctor.specialization || "";
+  const experience = doctor.experience
+    ? `${doctor.experience} years experience`
+    : "";
+  const rating = doctor.average_rating ? `${doctor.average_rating} stars` : "";
+  const locationStr = doctor.city ? `in ${doctor.city}` : "";
+
   return (
     <MainLayout>
       <div className="px-4 sm:px-6 pb-24 pt-6 sm:pt-10">
         <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
-
           {/* ================= TOP SECTION ================= */}
           <div className="flex flex-col md:flex-row gap-6 md:gap-8 p-4 sm:p-6 md:p-10">
-
             <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:block">
               <div className="bg-blue-200 dark:bg-gray-800 rounded-xl w-40 sm:w-48 md:w-52 h-48 sm:h-56 md:h-64 flex items-end justify-center overflow-hidden">
                 <Avatar
@@ -162,16 +168,15 @@ function DoctorDetails() {
                   image={doctor.profile_image}
                   alt={doctor.username}
                   className="h-full w-full rounded-none"
-                  imageClassName="object-fit bg-blue-200"
-                  textClassName="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 text-4xl font-semibold text-blue-600 shadow-md"
+                  disableFallbackBackground
+                  imageClassName="object-cover"
+                  textClassName="text-4xl font-semibold text-blue-600"
                 />
               </div>
             </div>
 
             <div className="flex-grow w-full">
-
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-
                 <div>
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
                     {doctor.username}
@@ -195,7 +200,6 @@ function DoctorDetails() {
                 >
                   {isAvailable ? "Available" : "Not Available"}
                 </div>
-
               </div>
 
               <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 font-medium mt-4">
@@ -203,7 +207,6 @@ function DoctorDetails() {
               </p>
 
               <div className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
-
                 <p className="flex items-center gap-2">
                   <FaClinicMedical />
                   {doctor.clinic_name}
@@ -218,11 +221,9 @@ function DoctorDetails() {
                   <FaPhoneAlt />
                   +91 {doctor.contact_no || "Not Available"}
                 </p>
-
               </div>
 
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-
                 <p className="flex items-center gap-1 font-semibold text-gray-800 dark:text-white text-sm sm:text-base">
                   <BiRupee />
                   {doctor.consultation_fee} Consultation Fee
@@ -237,9 +238,7 @@ function DoctorDetails() {
                     ({doctor.total_reviews || 0}+ Reviews)
                   </span>
                 </div>
-
               </div>
-
             </div>
           </div>
 
@@ -254,26 +253,22 @@ function DoctorDetails() {
               {doctor.about || "No description available."}
             </p>
           </div>
-
         </div>
       </div>
 
       {/* ================= BOOKING SECTION (THEME FIXED) ================= */}
       <div className="mx-auto -mt-6 sm:-mt-10 mb-20 max-w-4xl px-4">
-
         <div
           className={`bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-5 sm:p-8 border border-gray-200 dark:border-gray-700 ${
             !doctor?.is_active ? "opacity-40 pointer-events-none" : ""
           }`}
         >
-
           <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-5">
             Book an Appointment
           </h2>
 
           {/* DATES */}
           <div className="flex gap-3 overflow-x-auto pb-4 mb-6">
-
             {uniqueDates.map((date, index) => {
               const d = new Date(date);
 
@@ -294,12 +289,10 @@ function DoctorDetails() {
                 </div>
               );
             })}
-
           </div>
 
           {/* SLOTS */}
           <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
-
             {filteredSlots.length ? (
               filteredSlots.map((slot) => (
                 <button
@@ -319,7 +312,6 @@ function DoctorDetails() {
                 Select a date
               </div>
             )}
-
           </div>
 
           {/* BUTTON */}
@@ -331,10 +323,8 @@ function DoctorDetails() {
               Book Appointment
             </button>
           </div>
-
         </div>
       </div>
-
     </MainLayout>
   );
 }

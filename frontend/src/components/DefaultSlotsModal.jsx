@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from "./CustomToast";
+import {
+  getStoredDefaultSlots,
+  setStoredDefaultSlots,
+} from "../services/localStorageService";
 
 const DefaultSlotsModal = ({
   formatTime,
@@ -31,9 +35,9 @@ const DefaultSlotsModal = ({
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("default_slots");
+    const saved = getStoredDefaultSlots();
     if (saved) {
-      setDefaultSlots(JSON.parse(saved));
+      setDefaultSlots(saved);
     }
   }, []);
 
@@ -59,7 +63,7 @@ const DefaultSlotsModal = ({
     );
 
     setDefaultSlots(updated);
-    localStorage.setItem("default_slots", JSON.stringify(updated));
+    setStoredDefaultSlots(updated);
 
     toast("Default slot added", "success");
     setTimeInput("");
@@ -72,7 +76,7 @@ const DefaultSlotsModal = ({
   const handleDeleteSlot = (index) => {
     const updated = defaultSlots.filter((_, i) => i !== index);
     setDefaultSlots(updated);
-    localStorage.setItem("default_slots", JSON.stringify(updated));
+    setStoredDefaultSlots(updated);
   };
 
   return (

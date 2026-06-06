@@ -1,19 +1,44 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from django.utils import timezone
-from datetime import datetime, timedelta
-from django.contrib.auth.hashers import make_password
-from django.db import transaction
-import random
-from utils.email_service import send_html_email
 
 from .models import (User, 
                      DoctorProfile, 
                      Availability, 
                      Appointment, 
-                     Review, 
-                     OTP,
+                     Review,
                     )
+from .services.appointments import (
+    create_appointment,
+    get_appointment_rating,
+    validate_appointment_slot,
+)
+from .services.availability import validate_availability_data
+from .services.contact import validate_contact_message, validate_contact_name
+from .services.doctors import (
+    create_doctor_profile,
+    get_average_rating,
+    get_total_reviews,
+    update_doctor_profile,
+)
+from .services.otp import (
+    get_user_for_otp_email,
+    get_user_for_password_reset,
+    mark_otp_used,
+    reset_password,
+    send_otp,
+    validate_otp_data,
+    validate_password_reset_data,
+)
+from .services.payments import validate_stripe_checkout_data
+from .services.reviews import validate_review_data, validate_review_text
+from .services.users import (
+    authenticate_login,
+    create_registered_user,
+    update_user_profile,
+    validate_age,
+    validate_phone,
+    validate_unique_email,
+)
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -24,40 +49,17 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ["username", "email", "password"]
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email already registered")
-        return value
+        return validate_unique_email(value)
     
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-            role="USER"
-        )
-        return user
+        return create_registered_user(validated_data)
     
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        email = data.get("email")
-        password = data.get("password")
-
-        if not email or not password:
-            raise serializers.ValidationError("Email and password are required")
-        
-        user = authenticate(email=email, password=password)
-
-        if not user:
-            raise serializers.ValidationError("Invalid email or password")
-        
-        if not user.is_active:
-            raise serializers.ValidationError("Account is disabled")
-        
-        data["user"] = user
-        return data
+        return authenticate_login(authenticate, data)
     
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,25 +80,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["email", "role", "created_at", "updated_at"]
 
     def validate_age(self, value):
-        if value is not None and value <= 0:
-            raise serializers.ValidationError("Age must be greater than 0")
-        return value
+        return validate_age(value)
     
     def validate_phone(self, value):
-        if value:
-            if not value.isdigit():
-                raise serializers.ValidationError("Phone number must contain only digits")
-            if len(value) != 10:
-                raise serializers.ValidationError("Phone number must be exactly 10 digits")
-        return value
+        return validate_phone(value)
     
     def update(self, instance, validated_data):
-        new_image = validated_data.get("profile_image")
-
-        if new_image and instance.profile_image:
-            instance.profile_image.delete(save=False)
-
-        return super().update(instance, validated_data)
+        return update_user_profile(instance, validated_data)
     
 class DoctorCreateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only=True)
@@ -124,9 +114,7 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email already registered")
-        return value
+        return validate_unique_email(value)
 
     def validate_contact_no(self, value):
         if not value.isdigit() or len(value) != 10:
@@ -134,39 +122,7 @@ class DoctorCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        username = validated_data.pop("username")
-        email = validated_data.pop("email")
-        password = validated_data.pop("password")
-        profile_image = validated_data.pop("profile_image", None)
-
-        user = User.objects.create(
-            username=username,
-            email=email,
-            password=make_password(password),
-            role="DOCTOR",
-            profile_image=profile_image
-        )
-
-        doctor_profile = DoctorProfile.objects.create(
-            user=user,
-            is_active=True,  
-            **validated_data
-        )
-
-        send_html_email(
-            "Your Doctor Account is Ready",
-            "emails/doctor_account_created.html",
-            {
-                "username": username,
-                "email": email,
-                "password": password,
-                "specialization": validated_data["specialization"],
-                "clinic": validated_data["clinic_name"],
-            },
-            email
-        )
-
-        return doctor_profile
+        return create_doctor_profile(validated_data)
     
 class DoctorSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
@@ -201,51 +157,15 @@ class DoctorSerializer(serializers.ModelSerializer):
             "total_reviews",
         ]
 
-    def _get_seed_reviews(self, obj):
-        seeded_random = random.Random((obj.id or 0) * 7919 + (obj.user_id or 0) * 104729)
-        seed_count = seeded_random.randint(12, 40)
-        seed_average = round(seeded_random.uniform(3.6, 4.8), 1)
-        return seed_average, seed_count
-
     def get_average_rating(self, obj):
-        seed_average, seed_count = self._get_seed_reviews(obj)
-        actual_average = getattr(obj, "actual_average_rating", None)
-        actual_count = getattr(obj, "actual_total_reviews", 0) or 0
-
-        if actual_count == 0 or actual_average is None:
-            return seed_average
-
-        combined_total = (seed_average * seed_count) + (float(actual_average) * actual_count)
-        combined_count = seed_count + actual_count
-        return round(combined_total / combined_count, 1)
+        return get_average_rating(obj)
 
     def get_total_reviews(self, obj):
-        _, seed_count = self._get_seed_reviews(obj)
-        actual_count = getattr(obj, "actual_total_reviews", 0) or 0
-        return seed_count + actual_count
+        return get_total_reviews(obj)
 
     def update(self, instance, validated_data):
-        validated_data.pop("user", None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        instance.save()
-
         request = self.context.get("request")
-        if request and request.data.get("delete_image") == "true":
-            if instance.user.profile_image:
-                instance.user.profile_image.delete(save=False)
-                instance.user.profile_image = None
-                instance.user.save()
-
-        if request and request.FILES.get("profile_image"):
-            if instance.user.profile_image:
-                instance.user.profile_image.delete(save=False)
-            instance.user.profile_image = request.FILES.get("profile_image")
-            instance.user.save()
-
-        return instance
+        return update_doctor_profile(instance, validated_data, request)
 
 class AvailabilitySerializer(serializers.ModelSerializer):
     doctor = DoctorSerializer(read_only=True)
@@ -265,54 +185,7 @@ class AvailabilitySerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context.get("request")
         doctor = request.user.doctor_profile
-
-        if self.instance:
-            date = data.get("date", self.instance.date)
-            start = data.get("start_time", self.instance.start_time)
-        else:
-            date = data.get("date")
-            start = data.get("start_time")
-
-        if "date" not in data and "start_time" not in data:
-            if self.instance and "is_held" in data and not self.instance.is_available:
-                raise serializers.ValidationError("Booked slots cannot be held or released.")
-            return data
-
-        if date < timezone.now().date():
-            raise serializers.ValidationError("Cannot set availability in the past.")
-
-        if date == timezone.now().date():
-            if start <= timezone.now().time():
-                raise serializers.ValidationError("Cannot set past time.")
-
-        if not self.instance:
-            if Availability.objects.filter(
-                doctor=doctor,
-                date=date,
-                start_time=start
-            ).exists():
-                raise serializers.ValidationError("This time slot already exists.")
-
-        slots = Availability.objects.filter(
-            doctor=doctor,
-            date=date
-        ).exclude(id=self.instance.id if self.instance else None)
-
-        for s in slots:
-            diff = abs(
-                datetime.combine(date, s.start_time)
-                - datetime.combine(date, start)
-            )
-
-            if diff < timedelta(minutes=30):
-                raise serializers.ValidationError(
-                    "Minimum 30 minutes gap required between slots."
-                )
-
-        if self.instance and "is_held" in data and not self.instance.is_available:
-            raise serializers.ValidationError("Booked slots cannot be held or released.")
-
-        return data
+        return validate_availability_data(self.instance, data, doctor)
 
     def create(self, validated_data):
         validated_data["doctor"] = self.context["request"].user.doctor_profile
@@ -365,28 +238,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        slot = data.get("slot")
-
-        if not slot:
-            return data
-
-        if not slot.is_available:
-            raise serializers.ValidationError("This slot is not available.")
-
-        if slot.date < timezone.now().date():
-            raise serializers.ValidationError("Cannot book past date.")
-
-        if slot.date == timezone.now().date() and slot.start_time <= timezone.now().time():
-            raise serializers.ValidationError("Cannot book past time.")
-
-        if not slot.doctor.is_active:
-            raise serializers.ValidationError("Doctor is currently inactive.")
-
-        return data
+        return validate_appointment_slot(data)
     
     def get_rating(self, obj):
-        review = Review.objects.filter(appointment=obj).first()
-        return review.rating if review else None
+        return get_appointment_rating(obj)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -395,42 +250,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        slot = validated_data["slot"]
-
-        with transaction.atomic():
-            # lock the slot
-            slot = Availability.objects.select_for_update().get(id=slot.id)
-
-            if not slot.is_available:
-                raise serializers.ValidationError("Slot already booked")
-
-            appointment = Appointment.objects.create(
-                patient=user,
-                slot=slot,
-                payment_type=validated_data["payment_type"],
-                description=validated_data.get("description", ""),
-                fee=slot.doctor.consultation_fee,
-                status="PENDING",
-                payment_status="UNPAID",
-            )
-
-            slot.is_available = False
-            slot.save()
-
-            send_html_email(
-                "Appointment Booked",
-                "emails/appointment_booked.html",
-                {
-                    "username": user.username,
-                    "doctor": slot.doctor.user.username,
-                    "date": slot.date,
-                    "time": slot.start_time,
-                    "clinic": slot.doctor.clinic_name,
-                },
-                user.email
-            )
-
-        return appointment
+        return create_appointment(user, validated_data)
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
@@ -445,101 +265,38 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at"]
 
     def validate_review_text(self, value):
-        if not value or not value.strip():
-            raise serializers.ValidationError("Review text cannot be empty.")
-        return value.strip()
+        return validate_review_text(value)
 
     def validate(self, data):
         request = self.context["request"]
         user = request.user
-        appointment = data.get("appointment")
-
-        if appointment.is_rated:
-            raise serializers.ValidationError("Already reviewed.")
-
-        if appointment.patient != user:
-            raise serializers.ValidationError("You cannot review this appointment.")
-        
-        if appointment.status != "COMPLETED":
-            raise serializers.ValidationError("You can review only after appointment is completed.")
-        
-        rating = data.get("rating")
-        if rating < 1 or rating > 5:
-            raise serializers.ValidationError("Rating must be between 1 and 5.")
-        return data
+        return validate_review_data(data, user)
     
 class SendOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
-        try:
-            user = User.objects.get(email=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User with this email does not exist.")
-
+        user = get_user_for_otp_email(User, value)
         self.context["user"] = user
         return value
 
     def create(self, validated_data):
         user = self.context["user"]
-
-        if user.role != "USER":
-            raise serializers.ValidationError({
-                "role_restricted": True,
-                "role": user.role,
-                "message": f"{user.role} accounts cannot reset password via OTP."
-            })
-        OTP.objects.filter(user=user, is_used=False).update(is_used=True)
-
-        otp_instance = OTP.objects.create(user=user)
-
-        otp_code = otp_instance.generate_otp()
-        print("OTP:", otp_code)
-
-        send_html_email(
-            "Your OTP Code",
-            "emails/otp_email.html",
-            {"otp": otp_code},
-            user.email
-        )
-
-        return {"message": "OTP sent successfully."}
+        return send_otp(user)
     
 class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
 
     def validate(self, data):
-        email = data.get("email")
-        otp_value = data.get("otp")
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid email.")
-
-        otp_instance = OTP.objects.filter(
-            user=user,
-            otp=otp_value,
-            is_used=False
-        ).order_by("-created_at").first()
-
-        if not otp_instance:
-            raise serializers.ValidationError("Invalid OTP.")
-
-        if otp_instance.expires_at is None or timezone.now() > otp_instance.expires_at:
-            raise serializers.ValidationError("OTP has expired.")
-
+        user, otp_instance = validate_otp_data(User, data)
         self.context["otp_instance"] = otp_instance
         self.context["user"] = user
-
         return data
 
     def create(self, validated_data):
         otp_instance = self.context["otp_instance"]
-
-        otp_instance.is_used = True
-        otp_instance.save()
+        mark_otp_used(otp_instance)
 
         return {"message": "OTP verified successfully."}
 
@@ -549,30 +306,14 @@ class ResetPasswordSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(write_only=True, min_length=6)
 
     def validate_email(self, value):
-        try:
-            user = User.objects.get(email=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User does not exist.")
-        
+        user = get_user_for_password_reset(User, value)
         self.context["user"] = user
         return value
     
     def validate(self, data):
         user = self.context["user"]
-
-        if data["new_password"] != data["confirm_password"]:
-            raise serializers.ValidationError("Passwords do not match.")
-        
-        otp_instance = OTP.objects.filter(
-            user=user,
-            is_used=True
-        ).order_by("-created_at").first()
-
-        if not otp_instance:
-            raise serializers.ValidationError("OTP verification required.")
-
+        otp_instance = validate_password_reset_data(user, data)
         self.context["otp_instance"] = otp_instance
-
         return data
 
     def validate_new_password(self, value):
@@ -585,21 +326,7 @@ class ResetPasswordSerializer(serializers.Serializer):
         otp_instance = self.context["otp_instance"]
 
         new_password = self.validated_data["new_password"]
-
-        user.password = make_password(new_password)
-        user.save()
-
-        otp_instance.is_used = True
-        otp_instance.save()
-
-        send_html_email(
-            "Password Changed Successfully",
-            "emails/password_reset_success.html",
-            {"username": user.username},
-            user.email
-        )
-
-        return {"message": "Password reset successful."}
+        return reset_password(user, otp_instance, new_password)
 
 class ContactSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
@@ -607,36 +334,16 @@ class ContactSerializer(serializers.Serializer):
     message = serializers.CharField()
 
     def validate_name(self, value):
-        if len(value.strip()) < 3:
-            raise serializers.ValidationError("Name must be at least 3 characters")
-        return value
+        return validate_contact_name(value)
 
     def validate_message(self, value):
-        if len(value.strip()) < 10:
-            raise serializers.ValidationError("Message too short")
-        return value
+        return validate_contact_message(value)
     
 class StripeCheckoutSerializer(serializers.Serializer):
     appointment_id = serializers.IntegerField()
 
     def validate(self, data):
         user = self.context["request"].user
-
-        try:
-            appointment = Appointment.objects.get(
-                id=data["appointment_id"]
-            )
-        except Appointment.DoesNotExist:
-            raise serializers.ValidationError("Invalid appointment.")
-        
-        if appointment.patient != user:
-            raise serializers.ValidationError("Not your appointment.")
-        
-        if appointment.status != "APPROVED":
-            raise serializers.ValidationError("Appointment not approved.")
-        
-        if appointment.payment_status == "PAID":
-            raise serializers.ValidationError("Already paid.")
-        
+        appointment = validate_stripe_checkout_data(user, data["appointment_id"])
         data["appointment"] = appointment
         return data

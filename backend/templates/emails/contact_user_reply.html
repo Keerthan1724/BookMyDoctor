@@ -1,15 +1,50 @@
-{% extends "emails/base.html" %}
-{% block content %}
-<h2>Hello {{ name }},</h2>
+{% extends "emails/base.html" %} {% block content %}
+<h2>📬 Thank You for Contacting BookMyDoctor</h2>
 
-<p>Thanks for contacting <strong>BookMyDoctor</strong> 🩺</p>
+<p>Dear {{ name }},</p>
 
-<p>We have received your message and our team will get back to you within 24 hours.</p>
+<p>Thank you for reaching out to BookMyDoctor! 🩺</p>
 
-<h3>Your Message:</h3>
-<p style="background:#f5f5f5;padding:10px;border-radius:5px;">
-  {{ message }}
+<p>
+  We have received your message and appreciate you taking the time to contact
+  us. Our support team will review your inquiry and get back to you within 24
+  hours.
 </p>
 
-<p>Regards,<br/>BookMyDoctor Team</p>
+<div class="highlight">
+  <h3 style="margin-top: 0; color: #059669">Your Message Summary</h3>
+  <div
+    style="
+      background-color: #f9fafb;
+      border-left: 4px solid #10b981;
+      padding: 15px;
+      margin: 10px 0;
+    "
+  >
+    {{ message|linebreaks }}
+  </div>
+</div>
+
+<h3>What Happens Next?</h3>
+<ul>
+  <li>Our team will carefully review your message</li>
+  <li>We'll prepare a detailed response to address your concerns</li>
+  <li>You'll receive a reply within 24 hours</li>
+  <li>For urgent matters, you can also call our helpline</li>
+</ul>
+
+<p>
+  In the meantime, feel free to explore our platform and book appointments with
+  trusted healthcare professionals.
+</p>
+
+<p>
+  Thank you for choosing BookMyDoctor. We value your feedback and are committed
+  to providing excellent service.
+</p>
+
+<p style="margin-bottom: 0">
+  Best regards,<br />
+  <strong>The BookMyDoctor Support Team</strong>
+</p>
 {% endblock %}

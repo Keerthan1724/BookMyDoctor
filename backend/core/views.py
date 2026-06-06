@@ -3,41 +3,46 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import PermissionDenied
-from django.core.mail import send_mail
-from .serializers import (UserRegisterSerializer,
-                          UserLoginSerializer, 
-                          UserProfileSerializer, 
-                          DoctorSerializer, 
-                          DoctorCreateSerializer, 
-                          AvailabilitySerializer, 
-                          AppointmentSerializer, 
-                          StripeCheckoutSerializer, 
-                          ReviewSerializer,
-                          SendOTPSerializer,
-                          VerifyOTPSerializer,
-                          ResetPasswordSerializer,
-                          ContactSerializer
-                        )
+from .serializers import (
+    AppointmentSerializer, AvailabilitySerializer, ContactSerializer,
+    DoctorCreateSerializer, DoctorSerializer, ResetPasswordSerializer,
+    ReviewSerializer, SendOTPSerializer, StripeCheckoutSerializer,
+    UserLoginSerializer, UserProfileSerializer, UserRegisterSerializer,
+    VerifyOTPSerializer,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsAdmin, IsDoctor
-from .models import (DoctorProfile,
-                     User,
-                     Availability, 
-                     Appointment, 
-                     Payment, 
-                     Review
-                    )
-from django.conf import settings
-import stripe
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from django.db.models import Avg, Count
-from utils.email_service import send_html_email
+from .services.appointments import (
+    cancel_appointment_for_user,
+    ensure_appointment_create_allowed,
+    get_appointment_queryset,
+    update_appointment_for_user,
+)
+from .services.availability import (
+    create_availability_for_user,
+    delete_availability_for_user,
+    get_availability_queryset,
+    update_availability_for_user,
+)
+from .services.contact import send_contact_messages
+from .services.doctors import ensure_doctor_update_allowed, get_doctor_queryset
+from .services.payments import (
+    construct_stripe_webhook_event,
+    create_stripe_checkout_session,
+    handle_checkout_completed,
+    is_signature_verification_error,
+)
+from .services.reviews import create_review, get_review_queryset
+from .services.users import (
+    delete_profile_image,
+    delete_user_account,
+    get_user_queryset,
+    send_user_welcome_email,
+)
 
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
@@ -47,19 +52,15 @@ class RegisterAPIView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            send_html_email(
-                "Welcome to BookMyDoctor",
-                "emails/user_welcome.html",
-                {"username": user.username},
-                user.email
-            )
+            send_user_welcome_email(user)
 
             return Response(
                 {"message": "User registered successfully"},
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -79,6 +80,7 @@ class LoginAPIView(APIView):
             "message": "Login successful"
         }, status=status.HTTP_200_OK)
 
+
 class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -89,10 +91,7 @@ class ProfileAPIView(APIView):
 
     def patch(self, request):
         if request.data.get("delete_image") == "true":
-            if request.user.profile_image:
-                request.user.profile_image.delete(save=False)
-                request.user.profile_image = None
-                request.user.save()
+            delete_profile_image(request.user)
 
             serializer = UserProfileSerializer(request.user)
 
@@ -116,36 +115,28 @@ class ProfileAPIView(APIView):
         }, status=status.HTTP_200_OK)
 
     def delete(self, request):
-        user = request.user
-        user.delete()
+        delete_user_account(request.user)
         return Response({
             "message": "Account deleted successfully"
         }, status=status.HTTP_200_OK)
 
+
 class UserViewSet(ModelViewSet):
-    queryset = User.objects.filter(role="USER").order_by("-created_at")
     serializer_class = UserProfileSerializer
     permission_classes = [IsAdmin]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def get_queryset(self):
+        return get_user_queryset()
+
+
 class DoctorViewSet(ModelViewSet):
 
     def get_queryset(self):
-        queryset = DoctorProfile.objects.annotate(
-            actual_average_rating=Avg("availabilities__appointment__review__rating"),
-            actual_total_reviews=Count("availabilities__appointment__review")
-        ).select_related("user")
-
-        user = self.request.user
-        user_id = self.request.query_params.get("user")
-
-        if user.is_authenticated and user.role == "DOCTOR":
-            return queryset.filter(user=user)
-
-        if user_id:
-            return queryset.filter(user__id=user_id)
-
-        return queryset
+        return get_doctor_queryset(
+            self.request.user,
+            self.request.query_params.get("user")
+        )
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -164,54 +155,33 @@ class DoctorViewSet(ModelViewSet):
     def perform_update(self, serializer):
         doctor = self.get_object()
         user = self.request.user
+        ensure_doctor_update_allowed(doctor, user)
+        serializer.save()
 
-        if user.role == "ADMIN":
-            serializer.save()
-            return
 
-        if user.role == "DOCTOR" and doctor.user == user:
-            serializer.save()
-            return
-
-        raise PermissionDenied("You cannot update this profile")
-        
 class AvailabilityViewSet(ModelViewSet):
     serializer_class = AvailabilitySerializer
 
     def get_queryset(self):
-        doctor_id = self.request.query_params.get("doctor")
+        return get_availability_queryset(
+            self.request.user,
+            self.request.query_params.get("doctor")
+        )
 
-        if doctor_id:
-            return Availability.objects.filter(
-                doctor_id=doctor_id,
-                is_available=True,
-                is_held=False,
-            ).order_by("date", "start_time")
-        
-        if self.request.user.is_authenticated and self.request.user.role == "DOCTOR":
-            return Availability.objects.filter(
-                doctor__user=self.request.user
-            ).order_by("date", "start_time")
-        return Availability.objects.none()
-    
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsDoctor()]
         return [AllowAny()]
-    
+
     def perform_create(self, serializer):
-        doctor_profile = self.request.user.doctor_profile
-        serializer.save(doctor=doctor_profile)
+        create_availability_for_user(serializer, self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.doctor.user != self.request.user:
-            raise PermissionDenied("You cannot edit this slot")
-        serializer.save()
+        update_availability_for_user(serializer, self.request.user)
 
     def perform_destroy(self, instance):
-        if instance.doctor.user != self.request.user:
-            raise PermissionDenied("You cannot delete this slot")
-        instance.delete()
+        delete_availability_for_user(instance, self.request.user)
+
 
 class AppointmentViewSet(ModelViewSet):
     serializer_class = AppointmentSerializer
@@ -219,97 +189,36 @@ class AppointmentViewSet(ModelViewSet):
     parser_classes = [JSONParser]
 
     def get_queryset(self):
-        user = self.request.user
-
-        queryset = Appointment.objects.select_related(
-            "slot",
-            "slot__doctor",
-            "slot__doctor__user"
-        )
-
-        if user.role == "USER":
-            return queryset.filter(patient=user)
-
-        if user.role == "DOCTOR":
-            return queryset.filter(
-                slot__doctor__user=user
-            )
-
-        if user.role == "ADMIN":
-            return queryset
-
-        return Appointment.objects.none()
+        return get_appointment_queryset(self.request.user)
 
     def perform_create(self, serializer):
-        if self.request.user.role != "USER":
-            raise PermissionDenied("Only users can book appointments")
-
+        ensure_appointment_create_allowed(self.request.user)
         serializer.save(
             patient=self.request.user,
             status="PENDING"
         )
 
     def perform_update(self, serializer):
-        appointment = serializer.instance
-        user = self.request.user
-
-        if user.role == "DOCTOR":
-            if appointment.slot.doctor.user != user:
-                raise PermissionDenied("Not your appointment")
-
-            updated = serializer.save()
-
-            if serializer.validated_data.get("status") == "REJECTED":
-                appointment.slot.is_available = True
-                appointment.slot.save()
-
-            return updated
-
-        if user.role == "USER":
-            raise PermissionDenied("Users cannot modify appointment")
-
-        serializer.save()
+        return update_appointment_for_user(
+            serializer.instance,
+            self.request.user,
+            serializer
+        )
 
     def perform_destroy(self, instance):
-        user = self.request.user
+        cancel_appointment_for_user(instance, self.request.user)
 
-        if user.role == "USER" and instance.patient == user:
-            instance.status = "CANCELLED"
-            instance.save()
 
-            slot = instance.slot
-            slot.is_available = True
-            slot.save()
-            return
-
-        raise PermissionDenied("Not allowed to cancel appointment")
-    
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
+        return get_review_queryset(self.request.user)
 
-        if user.role == "USER":
-            return Review.objects.filter(appointment__patient=user)
-
-        elif user.role == "DOCTOR":
-            return Review.objects.filter(
-                appointment__slot__doctor__user=user
-            )
-
-        elif user.role == "ADMIN":
-            return Review.objects.all()
-
-        return Review.objects.none()
-    
     def perform_create(self, serializer):
-        review = serializer.save()
+        create_review(serializer)
 
-        appointment = review.appointment
-        appointment.is_rated = True
-        appointment.save()
 
 class SendOTPAPIView(APIView):
     permission_classes = [AllowAny]
@@ -323,9 +232,10 @@ class SendOTPAPIView(APIView):
         if serializer.is_valid():
             data = serializer.save()
             return Response(data, status=status.HTTP_200_OK)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class VerifyOTPAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -336,18 +246,15 @@ class VerifyOTPAPIView(APIView):
         )
 
         if serializer.is_valid():
-            otp_instance = serializer.context["otp_instance"]
-
-            otp_instance.is_used = True
-            otp_instance.save()
-
+            serializer.save()
             return Response(
                 {"message": "OTP verified successfully."},
                 status=status.HTTP_200_OK
             )
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class ResetPasswordAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -358,6 +265,7 @@ class ResetPasswordAPIView(APIView):
             result = serializer.save()
             return Response(result, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateStripeCheckoutSessionAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -372,50 +280,16 @@ class CreateStripeCheckoutSessionAPIView(APIView):
         appointment = serializer.validated_data["appointment"]
 
         try:
-            PLATFORM_FEE = 100
+            data = create_stripe_checkout_session(appointment)
+            return Response(data, status=status.HTTP_200_OK)
 
-            total_amount = appointment.fee + PLATFORM_FEE
-
-            session = stripe.checkout.Session.create(
-                payment_method_types=["card"],
-                line_items=[{
-                    "price_data": {
-                        "currency": "inr",
-                        "product_data": {
-                            "name": f"{appointment.slot.doctor.user.username} Appointment",
-                            "description": f"Includes ₹{PLATFORM_FEE} platform fee",
-                        },
-                        "unit_amount": int(total_amount * 100),
-                    },
-                    "quantity": 1,
-                }],
-                mode="payment",
-                success_url="http://localhost:5173/payment-success",
-                cancel_url="http://localhost:5173/appointmenthistory",
-                metadata={
-                    "appointment_id": appointment.id,
-                    "platform_fee": PLATFORM_FEE,
-                }
-            )
-
-            Payment.objects.create(
-                appointment=appointment,
-                stripe_session_id=session.id,
-                amount=appointment.fee,
-                status="INITIATED"
-            )
-
-            return Response({
-                "session_id": session.id,
-                "publishable_key": settings.STRIPE_PUBLISHABLE_KEY
-            }, status=status.HTTP_200_OK)
-        
         except Exception as e:
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+
 class ContactAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -428,22 +302,7 @@ class ContactAPIView(APIView):
         data = serializer.validated_data
 
         try:
-            send_html_email(
-                "New Contact Message",
-                "emails/contact_admin.html",
-                data,
-                "bookmydoctor.app2026@gmail.com"
-            )
-
-            send_html_email(
-                subject="We received your message - BookMyDoctor",
-                template="emails/contact_user_reply.html",
-                context={
-                    "name": data["name"],
-                    "message": data["message"],
-                },
-                to_email=data["email"],
-            )   
+            send_contact_messages(data)
 
             return Response(
                 {"message": "Message sent successfully"},
@@ -455,36 +314,20 @@ class ContactAPIView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
+
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-    except stripe.error.SignatureVerificationError:
+        event = construct_stripe_webhook_event(payload, sig_header)
+    except Exception as e:
+        if not is_signature_verification_error(e):
+            raise
         return HttpResponse(status=400)
-    
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
 
-        session_id = session["id"]
-        appointment_id = session.get("metadata", {}).get("appointment_id")
-
-        try:
-            payment = Payment.objects.get(stripe_session_id=session_id)
-            payment.status = "SUCCESS"
-            payment.save()
-
-            appointment = Appointment.objects.get(id=appointment_id)
-            appointment.payment_status = "PAID"
-            appointment.save()
-
-        except Exception as e:
-            print("Webhook error:", e)
+    handle_checkout_completed(event)
 
     return HttpResponse(status=200)

@@ -1,6 +1,46 @@
-{% extends "emails/base.html" %}
-{% block content %}
-<h2>Welcome to BookMyDoctor, {{ username }} 🎉</h2>
-<p>Your account has been successfully created.</p>
-<p>You can now book appointments with trusted doctors easily.</p>
+{% extends "emails/base.html" %} {% block content %}
+<h2>🎉 Welcome to BookMyDoctor, {{ username }}!</h2>
+
+<p>Dear {{ username }},</p>
+
+<p>
+  Welcome to BookMyDoctor! We're thrilled to have you join our healthcare
+  community. Your account has been successfully created and you're now ready to
+  book appointments with trusted healthcare professionals.
+</p>
+
+<div class="highlight">
+  <h3 style="margin-top: 0; color: #059669">What you can do now:</h3>
+  <ul style="margin: 0; padding-left: 20px">
+    <li>Search and browse doctors by specialization</li>
+    <li>Book appointments instantly</li>
+    <li>View your appointment history</li>
+    <li>Leave reviews for your consultations</li>
+    <li>Manage your healthcare journey</li>
+  </ul>
+</div>
+
+<h3>Getting Started</h3>
+<p>To make your first appointment:</p>
+<ol>
+  <li>Log in to your account</li>
+  <li>Search for doctors by location or specialty</li>
+  <li>Choose your preferred time slot</li>
+  <li>Complete the booking process</li>
+</ol>
+
+<p>
+  If you need any assistance or have questions, our support team is here to
+  help.
+</p>
+
+<p>
+  Thank you for choosing BookMyDoctor for your healthcare needs. We look forward
+  to serving you!
+</p>
+
+<p style="margin-bottom: 0">
+  Best regards,<br />
+  <strong>The BookMyDoctor Team</strong>
+</p>
 {% endblock %}

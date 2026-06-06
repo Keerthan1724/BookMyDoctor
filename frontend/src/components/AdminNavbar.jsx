@@ -19,7 +19,19 @@ const AdminNavbar = ({ onMenuToggle }) => {
           <FaBars size={16} />
         </button>
 
-        <img src={logo} className="h-8 sm:h-10" alt="BookMyDoctor" />
+        <div className="flex items-center gap-3 select-none">
+          <img
+            src={logo}
+            className="h-11 w-11 object-contain"
+            alt="BookMyDoctor"
+          />
+
+          <h1 className="hidden md:block text-xl lg:text-2xl font-semibold tracking-wide">
+            <span className="text-slate-900 dark:text-slate-100">Book</span>
+            <span className="text-teal-600 font-bold">My</span>
+            <span className="text-blue-600 font-bold">Doctor</span>
+          </h1>
+        </div>
 
         {user?.role && (
           <span className="ml-2 hidden sm:inline-flex border px-3 py-1 text-xs theme-text-muted bg-slate-100/80 border-slate-300/80 dark:bg-slate-900/80 dark:border-slate-700 dark:text-slate-200 rounded-full">
@@ -49,7 +61,7 @@ const AdminNavbar = ({ onMenuToggle }) => {
         {/* Logout */}
         <button
           onClick={logout}
-          className="px-3 sm:px-5 py-2 text-xs sm:text-sm rounded-full bg-primary text-white hover:bg-primaryDark transition"
+          className="hidden lg:inline-flex px-5 py-2 text-sm rounded-full bg-primary text-white hover:bg-primaryDark transition"
         >
           Logout
         </button>

@@ -1,9 +1,10 @@
 import { createContext, useEffect, useMemo, useState } from "react";
+import { getStoredTheme, setStoredTheme } from "../services/localStorageService";
 
 export const ThemeContext = createContext();
 
 const getInitialTheme = () => {
-  const savedTheme = localStorage.getItem("theme");
+  const savedTheme = getStoredTheme();
 
   if (savedTheme === "light" || savedTheme === "dark") {
     return savedTheme;
@@ -22,14 +23,14 @@ export const ThemeProvider = ({ children }) => {
 
     root.classList.toggle("dark", theme === "dark");
     root.style.colorScheme = theme;
-    localStorage.setItem("theme", theme);
+    setStoredTheme(theme);
   }, [theme]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleChange = (event) => {
-      const savedTheme = localStorage.getItem("theme");
+      const savedTheme = getStoredTheme();
 
       if (savedTheme !== "light" && savedTheme !== "dark") {
         setTheme(event.matches ? "dark" : "light");

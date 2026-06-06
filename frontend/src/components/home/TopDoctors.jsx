@@ -33,8 +33,6 @@ function TopDoctors() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  console.log(doctors);
-
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-10 text-center text-gray-800 dark:text-white">

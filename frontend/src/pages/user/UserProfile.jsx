@@ -17,6 +17,14 @@ import { customModal } from "../../services/modalService";
 import Avatar from "../../components/Avatar";
 import { getImageUrl } from "../../utils/media";
 
+import {
+  buildFormDataFromObject,
+  validateProfileForm,
+  calculateDashboardStats,
+} from "../../utils/profileHelpers";
+
+import { getCroppedImageBlob } from "../../utils/imageCropHelpers";
+
 const formFields = [
   { label: "Username", name: "username", type: "text", editable: true },
   { label: "Email", name: "email", type: "email", editable: false },
@@ -77,73 +85,17 @@ const UserProfile = () => {
     const fetchDashboardData = async () => {
       try {
         const res = await getAppointments();
-        const appointments = res.data || [];
-
-        let totalSpent = 0;
-        let upcoming = 0;
-        let completed = 0;
-
-        appointments.forEach((appointment) => {
-          if (appointment.payment_status === "PAID" || appointment.status === "COMPLETED") {
-            totalSpent += Number(appointment.fee || 0);
-          }
-
-          if (appointment.status === "PENDING" || appointment.status === "APPROVED") {
-            upcoming += 1;
-          }
-
-          if (appointment.status === "COMPLETED") {
-            completed += 1;
-          }
-        });
-
-        setDashboardData({
-          totalBookings: appointments.length,
-          totalSpent,
-          upcoming,
-          completed,
-        });
+        setDashboardData(calculateDashboardStats(res.data || []));
       } catch (err) {
         console.log(err);
       }
     };
 
-    if (user) {
-      fetchDashboardData();
-    }
+    if (user) fetchDashboardData();
   }, [user]);
 
   const onCropComplete = (_, croppedPixels) => {
     setCroppedAreaPixels(croppedPixels);
-  };
-
-  const getCroppedImg = async (imageSrc, crop) => {
-    const image = new Image();
-    image.src = imageSrc;
-
-    await new Promise((resolve) => (image.onload = resolve));
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = crop.width;
-    canvas.height = crop.height;
-
-    ctx.drawImage(
-      image,
-      crop.x,
-      crop.y,
-      crop.width,
-      crop.height,
-      0,
-      0,
-      crop.width,
-      crop.height,
-    );
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => resolve(blob), "image/jpeg");
-    });
   };
 
   const handleAvatarClick = () => {
@@ -167,12 +119,10 @@ const UserProfile = () => {
     }
 
     const reader = new FileReader();
-
     reader.onload = () => {
       setImageSrc(reader.result);
       setCropModal(true);
     };
-
     reader.readAsDataURL(file);
   };
 
@@ -180,14 +130,19 @@ const UserProfile = () => {
     try {
       if (!croppedAreaPixels) return;
 
-      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const croppedBlob = await getCroppedImageBlob(
+        imageSrc,
+        croppedAreaPixels
+      );
 
       const formData = new FormData();
       formData.append("profile_image", croppedBlob, "profile.jpg");
 
       const res = await updateProfile(formData);
 
-      const url = getImageUrl(res.data.data.profile_image, { bustCache: true });
+      const url = getImageUrl(res.data.data.profile_image, {
+        bustCache: true,
+      });
 
       setUser(res.data.data);
       setPreviewImage(url);
@@ -215,40 +170,17 @@ const UserProfile = () => {
     }
   };
 
-  const validateForm = () => {
-    if (form.username.trim().length < 3) {
-      toast("Username must be at least 3 characters", "error");
-      return false;
-    }
-
-    if (form.phone && !/^[0-9]{10}$/.test(form.phone)) {
-      toast("Phone must be 10 digits", "error");
-      return false;
-    }
-
-    if (form.age && form.age <= 0) {
-      toast("Age must be greater than 0", "error");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleUpdate = async () => {
-    if (!validateForm()) return;
+    if (!validateProfileForm(form, toast)) return;
 
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      Object.keys(form).forEach((key) => {
-        formData.append(key, form[key]);
-      });
+      const formData = buildFormDataFromObject(form);
 
       const res = await updateProfile(formData);
 
       setUser(res.data.data);
-
       toast("Profile updated successfully", "success");
 
       setEditMode(false);

@@ -30,13 +30,6 @@ const ForgotPassword = () => {
       setLoading(true);
       const response = await sendOTP({ email });
 
-      if (response?.data?.message) {
-        toast(response.data.message, "success");
-        return;
-      }
-
-      toast(`OTP ${isResend ? "resent" : "sent"} to your email`, "success");
-
       const expiresAt = Date.now() + 60000;
 
       navigate("/verify-otp", {
@@ -46,6 +39,13 @@ const ForgotPassword = () => {
           background: location.state?.background || location,
         },
       });
+
+      if (response?.data?.message) {
+        toast(response.data.message, "success");
+        return;
+      }
+
+      toast(`OTP ${isResend ? "resent" : "sent"} to your email`, "success");
     } catch (error) {
       console.error("Send OTP Error:", error);
 

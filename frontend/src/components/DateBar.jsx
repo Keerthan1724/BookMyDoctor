@@ -1,5 +1,10 @@
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "./CustomToast";
+import {
+  clearStoredDoctorDates,
+  getStoredDoctorDates,
+  setStoredDoctorDates,
+} from "../services/localStorageService";
 
 const DateBar = ({
   dates,
@@ -14,7 +19,7 @@ const DateBar = ({
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);
 
-  const checkOverflow = () => {
+  const checkOverflow = useCallback(() => {
     const el = dateScrollRef.current;
     if (!el) return;
 
@@ -28,15 +33,33 @@ const DateBar = ({
 
     setShowLeft(el.scrollLeft > 0);
     setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth);
-  };
+  }, []);
 
-  const generateDates = () => {
-    const saved = localStorage.getItem("doctor_dates");
+  const generateDates = useCallback(() => {
+    const saved = getStoredDoctorDates();
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
+    const createDefaultDates = () => {
+      const arr = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() + i);
+
+        arr.push({
+          full: d.toISOString().split("T")[0],
+          day: d.toLocaleDateString("en-US", { weekday: "short" }),
+          date: d.getDate(),
+        });
+      }
+
+      setDates(arr);
+      setSelectedDate(arr[0].full);
+      setStoredDoctorDates(arr);
+    };
 
     if (saved) {
-      let parsed = JSON.parse(saved);
+      let parsed = saved;
 
       parsed = parsed.filter((d) => {
         const dDate = new Date(d.full);
@@ -44,42 +67,28 @@ const DateBar = ({
       });
 
       if (parsed.length === 0) {
-        localStorage.removeItem("doctor_dates");
-        return generateDates();
+        clearStoredDoctorDates();
+        createDefaultDates();
+        return;
       }
 
       setDates(parsed);
       setSelectedDate(parsed[0].full);
-      localStorage.setItem("doctor_dates", JSON.stringify(parsed));
+      setStoredDoctorDates(parsed);
       return;
     }
 
-    const arr = [];
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() + i);
-
-      arr.push({
-        full: d.toISOString().split("T")[0],
-        day: d.toLocaleDateString("en-US", { weekday: "short" }),
-        date: d.getDate(),
-      });
-    }
-
-    setDates(arr);
-    setSelectedDate(arr[0].full);
-
-    localStorage.setItem("doctor_dates", JSON.stringify(arr));
-  };
+    createDefaultDates();
+  }, [setDates, setSelectedDate]);
 
   useEffect(() => {
     generateDates();
-  }, []);
+  }, [generateDates]);
 
   useEffect(() => {
-    checkOverflow();
-  }, [dates]);
+    const frame = requestAnimationFrame(checkOverflow);
+    return () => cancelAnimationFrame(frame);
+  }, [checkOverflow, dates]);
 
   const scrollDates = (direction) => {
     const el = dateScrollRef.current;
@@ -107,7 +116,7 @@ const DateBar = ({
 
     const updated = [...dates, newDate];
     setDates(updated);
-    localStorage.setItem("doctor_dates", JSON.stringify(updated));
+    setStoredDoctorDates(updated);
   };
 
   const handleRemoveDate = (e, index, fullDate) => {
@@ -144,7 +153,7 @@ const DateBar = ({
     );
 
     setDates(updated);
-    localStorage.setItem("doctor_dates", JSON.stringify(updated));
+    setStoredDoctorDates(updated);
   };
 
   const handleOpenDatePicker = () => {

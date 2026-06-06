@@ -14,16 +14,16 @@ function DoctorCard({ doctor, onClick }) {
           name={doctor.username}
           image={doctor.profile_image || doctor.image}
           alt={doctor.username}
-          className="h-full w-full rounded-none"
-          imageClassName="object-contain"
+          className="h-full w-full"
           disableFallbackBackground
-          textClassName="h-16 w-16 rounded-full bg-white/90 text-2xl font-semibold text-blue-600 shadow-sm flex items-center justify-center"
+          square  
+          imageClassName="h-full w-full object-cover"
+          textClassName="h-20 w-20 rounded-full bg-white/90 text-3xl font-semibold text-blue-600 flex items-center justify-center shadow-sm"
         />
       </div>
 
       {/* CONTENT */}
       <div className="p-2 sm:p-3 md:p-4">
-        
         <div
           className={`flex items-center gap-2 text-[10px] sm:text-xs font-medium ${
             isAvailable ? "text-green-500" : "text-red-500"

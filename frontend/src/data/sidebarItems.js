@@ -3,8 +3,8 @@ import {
   CalendarDays,
   UserPlus,
   Users,
-  User2,
-  UserCircle
+  UserCircle,
+  Stethoscope
 } from "lucide-react";
 
 export const adminSidebar = [
@@ -26,12 +26,12 @@ export const adminSidebar = [
   {
     name: "Doctors List",
     path: "/admin/doctorlist",
-    icon: Users,
+    icon: Stethoscope,
   },
   {
     name: "Users List",
     path: "/admin/userlist",
-    icon: User2,
+    icon: Users,
   },
 ];
 

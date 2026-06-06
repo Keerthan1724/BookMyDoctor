@@ -1,8 +1,8 @@
 import { useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { toast } from "../../components/CustomToast";
-import { contactInfo, formFields } from "../../data/contactData";
-import API from "../../services/api";
+import { contactInfo, contactFormFields } from "../../data/publicData";
+import { sendContactMessage } from "../../services/contactService";
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -30,11 +30,16 @@ const Contact = () => {
 
     try {
       setLoading(true);
-      await API.post("/contact/", form);
+      await sendContactMessage(form);
       toast("Message sent successfully", "success");
       setForm({ name: "", email: "", message: "" });
     } catch (err) {
-      toast("Failed to send message", "error");
+      if (err.response && err.response.data) {
+        const firstError = Object.values(err.response.data)[0][0];
+        toast(firstError, "error");
+      } else {
+        toast("Something went wrong", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +55,6 @@ const Contact = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 bg-cardLight dark:bg-cardDark p-5 sm:p-8 rounded-xl shadow-lg">
-          
           {/* LEFT */}
           <div className="flex flex-col gap-4 sm:gap-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white">
@@ -92,35 +96,33 @@ const Contact = () => {
 
           {/* RIGHT */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
-            {formFields.map((field) => (
+            {contactFormFields.map((field) => (
               <div key={field.name}>
                 <label className="block mb-1 text-sm text-gray-700 dark:text-gray-300">
                   {field.label}
                 </label>
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={form[field.name]}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent text-sm sm:text-base"
-                  placeholder={field.placeholder}
-                />
+
+                {field.type === "textarea" ? (
+                  <textarea
+                    name={field.name}
+                    rows="5"
+                    value={form[field.name]}
+                    onChange={handleChange}
+                    placeholder={field.placeholder}
+                    className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent resize-none text-sm sm:text-base"
+                  />
+                ) : (
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={form[field.name]}
+                    onChange={handleChange}
+                    placeholder={field.placeholder}
+                    className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent text-sm sm:text-base"
+                  />
+                )}
               </div>
             ))}
-
-            <div>
-              <label className="block mb-1 text-sm text-gray-700 dark:text-gray-300">
-                Message
-              </label>
-              <textarea
-                name="message"
-                rows="5"
-                value={form.message}
-                onChange={handleChange}
-                className="w-full border border-gray-300 dark:border-gray-700 p-2 sm:p-3 rounded-lg bg-transparent resize-none text-sm sm:text-base"
-                placeholder="Write your message..."
-              />
-            </div>
 
             <button
               type="submit"

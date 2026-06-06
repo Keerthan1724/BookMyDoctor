@@ -124,7 +124,9 @@ const UserList = () => {
           onClose={() => setSelectedUser(null)}
           onUpdated={(updatedUser) => {
             setUsers((prev) =>
-              prev.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+              prev.map((user) =>
+                user.id === updatedUser.id ? updatedUser : user,
+              ),
             );
             setSelectedUser(updatedUser);
           }}

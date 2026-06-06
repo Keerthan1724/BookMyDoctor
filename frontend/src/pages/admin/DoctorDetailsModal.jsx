@@ -216,10 +216,9 @@ const DoctorDetailsModal = ({ doctor, onClose, onUpdated, onDeleted }) => {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Username</label>
+            <label className="mb-1 block text-sm font-medium">Doctor Name</label>
             <input
               value={doctor.username || ""}
-              readOnly
               className="input cursor-not-allowed opacity-70"
             />
           </div>

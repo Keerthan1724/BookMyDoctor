@@ -8,6 +8,10 @@ export const getDoctorDetails = (id) => {
   return API.get(`doctors/${id}/`);
 };
 
+export const getDoctorByUser = (userId) => {
+  return API.get(`doctors/?user=${userId}`);
+};
+
 export const addDoctor = (data) => {
   return API.post("doctors/", data);
 };

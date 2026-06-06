@@ -3,8 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout";
 import { doctorSidebar } from "../../data/sidebarItems";
 
 import { AuthContext } from "../../context/AuthContext";
-import API from "../../services/api";
-import { updateDoctor } from "../../services/doctorService";
+import { getDoctorByUser, updateDoctor } from "../../services/doctorService";
 import { deleteAccount } from "../../services/authService";
 
 import { FiEdit2, FiTrash2, FiCamera } from "react-icons/fi";
@@ -47,7 +46,7 @@ const DoctorProfile = () => {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const res = await API.get(`doctors/?user=${user.id}`);
+        const res = await getDoctorByUser(user.id);
         const doctorData = res.data[0];
 
         setDoctor(doctorData);

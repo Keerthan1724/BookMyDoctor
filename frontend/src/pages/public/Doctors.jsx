@@ -86,8 +86,10 @@ function Doctors() {
         setLoading(true);
         const res = await getDoctors();
         setDoctors(res.data);
+        console.log("Doctors loaded:", res.data.length);
       } catch (err) {
-        console.log(err);
+        console.error("Error fetching doctors:", err);
+        // You can add a toast or error state here
       } finally {
         setLoading(false);
       }
@@ -173,7 +175,9 @@ function Doctors() {
           </h2>
 
           {loading ? (
-            <p className="text-sm text-textLight dark:text-textDark">Loading doctors...</p>
+            <p className="text-sm text-textLight dark:text-textDark">
+              Loading doctors...
+            </p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {displayedDoctors.map((doctor) => (
@@ -228,7 +232,9 @@ function Doctors() {
             </h2>
 
             {loading ? (
-              <p className="text-sm text-textLight dark:text-textDark">Loading doctors...</p>
+              <p className="text-sm text-textLight dark:text-textDark">
+                Loading doctors...
+              </p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {displayedDoctors.map((doctor) => (

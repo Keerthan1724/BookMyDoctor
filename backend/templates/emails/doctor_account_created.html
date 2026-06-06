@@ -1,18 +1,89 @@
-{% extends "emails/base.html" %}
-{% block content %}
-<h2>Doctor Account Created</h2>
+{% extends "emails/base.html" %} {% block content %}
+<h2>🎉 Welcome to BookMyDoctor, Dr. {{ username }}!</h2>
 
-<p>Hello Dr. {{ username }},</p>
+<p>Dear Dr. {{ username }},</p>
 
-<p>An account has been created for you by BookMyDoctor Admin.</p>
+<p>
+  We are delighted to inform you that your professional account has been
+  successfully created on the BookMyDoctor platform. You can now start accepting
+  appointments and managing your practice digitally.
+</p>
 
-<ul>
-<li><strong>Email:</strong> {{ email }}</li>
-<li><strong>Password:</strong> {{ password }}</li>
-<li><strong>Specialization:</strong> {{ specialization }}</li>
-<li><strong>Clinic:</strong> {{ clinic }}</li>
-</ul>
+<div class="highlight">
+  <h3 style="margin-top: 0; color: #1e40af">Your Login Credentials</h3>
+  <p><strong>Email:</strong> {{ email }}</p>
+  <p><strong>Password:</strong> {{ password }}</p>
+  <p style="color: #dc2626; font-weight: 600">
+    ⚠️ Important: Please change your password after first login and do not share
+    your credentials with anyone.
+  </p>
+</div>
 
-<p style="color:red;"><strong>Important:</strong> Please do not share your login credentials with anyone.</p>
+<h3>Your Professional Profile Details</h3>
+<table class="info-table">
+  <tr>
+    <th>Full Name</th>
+    <td>{{ username }}</td>
+  </tr>
+  <tr>
+    <th>Specialization</th>
+    <td>{{ specialization }}</td>
+  </tr>
+  <tr>
+    <th>Qualification</th>
+    <td>{{ qualification }}</td>
+  </tr>
+  <tr>
+    <th>Experience</th>
+    <td>{{ experience }} years</td>
+  </tr>
+  <tr>
+    <th>Consultation Fee</th>
+    <td>₹{{ consultation_fee }}</td>
+  </tr>
+  <tr>
+    <th>Clinic Name</th>
+    <td>{{ clinic_name }}</td>
+  </tr>
+  <tr>
+    <th>Clinic Address</th>
+    <td>{{ clinic_address }}</td>
+  </tr>
+  <tr>
+    <th>City</th>
+    <td>{{ city }}</td>
+  </tr>
+  <tr>
+    <th>Contact Number</th>
+    <td>{{ contact_no }}</td>
+  </tr>
+  <tr>
+    <th>About</th>
+    <td>{{ about }}</td>
+  </tr>
+</table>
 
+<h3>Getting Started</h3>
+<p>To get started with your account:</p>
+<ol>
+  <li>Log in to your account using the credentials provided above</li>
+  <li>Complete your profile by adding a professional photo</li>
+  <li>Set your availability slots for patient appointments</li>
+  <li>Start accepting appointments from patients</li>
+</ol>
+
+<p>
+  If you have any questions or need assistance, please don't hesitate to contact
+  our support team.
+</p>
+
+<p>
+  We wish you success in providing excellent healthcare services through our
+  platform!
+</p>
+
+<p style="margin-bottom: 0">
+  Best regards,<br />
+  <strong>The BookMyDoctor Team</strong>
+</p>
 {% endblock %}

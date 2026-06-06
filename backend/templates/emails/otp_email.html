@@ -1,7 +1,45 @@
-{% extends "emails/base.html" %}
-{% block content %}
-<h2>Your OTP Code</h2>
-<p>Use the OTP below to continue:</p>
-<h1 style="text-align:center;">{{ otp }}</h1>
-<p>This OTP is valid for 1 minute.</p>
+{% extends "emails/base.html" %} {% block content %}
+<h2>🔐 Your Verification OTP Code</h2>
+
+<p>Dear {{ username }},</p>
+
+<p>
+  To reset password of your account on BookMyDoctor, please use the verification code
+  below:
+</p>
+
+<div class="highlight" style="text-align: center; padding: 20px">
+  <h1 style="font-size: 32px; letter-spacing: 5px; margin: 0; color: #1e40af">
+    {{ otp }}
+  </h1>
+</div>
+
+<p style="text-align: center; color: #6b7280">
+  This code is valid for <strong>1 minute</strong> only.
+</p>
+
+<div
+  style="
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+  "
+>
+  <p style="margin: 0; color: #92400e">
+    <strong>Security Notice:</strong> Do not share this code with anyone. Our
+    team will never ask for your verification code.
+  </p>
+</div>
+
+<p>
+  If you didn't request this code, please ignore this email or contact our
+  support team immediately.
+</p>
+
+<p style="margin-bottom: 0">
+  Best regards,<br />
+  <strong>The BookMyDoctor Team</strong>
+</p>
 {% endblock %}

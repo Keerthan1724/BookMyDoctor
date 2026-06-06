@@ -1,0 +1,509 @@
+{
+  "users": [
+    {
+      "username": "Aarav Joshi",
+      "email": "aarav.joshi@example.com",
+      "phone": "9876501001",
+      "age": 28,
+      "address": "Indiranagar, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Ananya Rao",
+      "email": "ananya.rao@example.com",
+      "phone": "9876501002",
+      "age": 24,
+      "address": "MG Road, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Keerthan",
+      "email": "keerth17@gmail.com",
+      "phone": "6361062673",
+      "age": 20,
+      "address": "Kolanakodu, BH Road",
+      "gender": "MALE",
+      "password": "keerthan17"
+    },
+    {
+      "username": "Shamanth Kharvi",
+      "email": "shamanthkharvi@gmail.com",
+      "phone": "9876501002",
+      "age": 20,
+      "address": "Beach Badi, Uppunda",
+      "gender": "MALE",
+      "password": "shamanthkharvi"
+    },
+    {
+      "username": "Srajith Shetty Keradi",
+      "email": "srajithshetty@gmail.com",
+      "phone": "9876501002",
+      "age": 20,
+      "address": "Jadkal Road, Keradi",
+      "gender": "MALE",
+      "password": "srajithshetty"
+    },
+    {
+      "username": "Riya Sen",
+      "email": "riya.sen@example.com",
+      "phone": "9876501003",
+      "age": 32,
+      "address": "Whitefield, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Dev Sharma",
+      "email": "dev.sharma@example.com",
+      "phone": "9876501004",
+      "age": 29,
+      "address": "Koramangala, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Neha Gupta",
+      "email": "neha.gupta@example.com",
+      "phone": "9876501005",
+      "age": 27,
+      "address": "Jayanagar, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Siddharth Verma",
+      "email": "siddharth.verma@example.com",
+      "phone": "9876501006",
+      "age": 35,
+      "address": "Banashankari, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Anika Patel",
+      "email": "anika.patel@example.com",
+      "phone": "9876501007",
+      "age": 31,
+      "address": "Hebbal, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Varun Rao",
+      "email": "varun.rao@example.com",
+      "phone": "9876501008",
+      "age": 30,
+      "address": "Rajajinagar, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Meenal Kapoor",
+      "email": "meenal.kapoor@example.com",
+      "phone": "9876501009",
+      "age": 26,
+      "address": "HSR Layout, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Pratik Desai",
+      "email": "pratik.desai@example.com",
+      "phone": "9876501010",
+      "age": 33,
+      "address": "J.P. Nagar, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Kavya Nair",
+      "email": "kavya.nair@example.com",
+      "phone": "9876501011",
+      "age": 29,
+      "address": "Electronic City, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Sachin Menon",
+      "email": "sachin.menon@example.com",
+      "phone": "9876501012",
+      "age": 34,
+      "address": "Yelahanka, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Tanvi Shah",
+      "email": "tanvi.shah@example.com",
+      "phone": "9876501013",
+      "age": 25,
+      "address": "Kalyan Nagar, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    },
+    {
+      "username": "Nikhil Joshi",
+      "email": "nikhil.joshi@example.com",
+      "phone": "9876501014",
+      "age": 36,
+      "address": "Malleshwaram, Bengaluru",
+      "gender": "MALE",
+      "password": "user123"
+    },
+    {
+      "username": "Maya Kapoor",
+      "email": "maya.kapoor@example.com",
+      "phone": "9876501015",
+      "age": 28,
+      "address": "Whitefield, Bengaluru",
+      "gender": "FEMALE",
+      "password": "user123"
+    }
+  ],
+  "availabilities": [
+    {
+      "doctor_email": "rahul.sharma@gmail.com",
+      "date": "2026-05-10",
+      "start_time": "09:00:00"
+    },
+    {
+      "doctor_email": "priya.nair@gmail.com",
+      "date": "2026-05-11",
+      "start_time": "10:30:00"
+    },
+    {
+      "doctor_email": "arjun.patel@gmail.com",
+      "date": "2026-05-12",
+      "start_time": "14:00:00"
+    },
+    {
+      "doctor_email": "sneha.verma@gmail.com",
+      "date": "2026-05-13",
+      "start_time": "11:00:00"
+    },
+    {
+      "doctor_email": "vijay.kumar@gmail.com",
+      "date": "2026-05-14",
+      "start_time": "15:00:00"
+    },
+    {
+      "doctor_email": "neha.shah@gmail.com",
+      "date": "2026-05-15",
+      "start_time": "09:30:00"
+    },
+    {
+      "doctor_email": "amit.singh@gmail.com",
+      "date": "2026-05-16",
+      "start_time": "13:00:00"
+    },
+    {
+      "doctor_email": "reena.jain@gmail.com",
+      "date": "2026-05-17",
+      "start_time": "16:00:00"
+    },
+    {
+      "doctor_email": "rajesh.menon@gmail.com",
+      "date": "2026-05-18",
+      "start_time": "10:00:00"
+    },
+    {
+      "doctor_email": "divya.krishna@gmail.com",
+      "date": "2026-05-19",
+      "start_time": "14:30:00"
+    },
+    {
+      "doctor_email": "suresh.bhat@gmail.com",
+      "date": "2026-05-20",
+      "start_time": "09:00:00"
+    },
+    {
+      "doctor_email": "anita.kumar@gmail.com",
+      "date": "2026-05-21",
+      "start_time": "11:30:00"
+    },
+    {
+      "doctor_email": "deepak.rana@gmail.com",
+      "date": "2026-05-22",
+      "start_time": "13:30:00"
+    },
+    {
+      "doctor_email": "megha.singh@gmail.com",
+      "date": "2026-05-23",
+      "start_time": "15:30:00"
+    },
+    {
+      "doctor_email": "rohit.patel@gmail.com",
+      "date": "2026-05-24",
+      "start_time": "10:00:00"
+    }
+  ],
+  "appointments": [
+    {
+      "patient_email": "aarav.joshi@example.com",
+      "doctor_email": "rahul.sharma@gmail.com",
+      "date": "2026-05-10",
+      "start_time": "09:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 500,
+      "description": "Follow-up consultation for chest discomfort.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very attentive and informative. Highly recommended."
+      }
+    },
+    {
+      "patient_email": "keerth17@gmail.com",
+      "doctor_email": "rahul.sharma@gmail.com",
+      "date": "2026-05-10",
+      "start_time": "09:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 500,
+      "description": "Follow-up consultation for chest discomfort.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very attentive and informative. Highly recommended."
+      }
+    },
+    {
+      "patient_email": "shamanthkharvi@gmail.com",
+      "doctor_email": "rahul.sharma@gmail.com",
+      "date": "2026-05-10",
+      "start_time": "09:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 500,
+      "description": "Follow-up consultation for chest discomfort.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very attentive and informative. Highly recommended."
+      }
+    },
+    {
+      "patient_email": "srajithshetty@gmail.com.com",
+      "doctor_email": "rahul.sharma@gmail.com",
+      "date": "2026-05-10",
+      "start_time": "09:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 500,
+      "description": "Follow-up consultation for chest discomfort.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very attentive and informative. Highly recommended."
+      }
+    },
+    {
+      "patient_email": "ananya.rao@example.com",
+      "doctor_email": "priya.nair@gmail.com",
+      "date": "2026-05-11",
+      "start_time": "10:30:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 400,
+      "description": "Skin allergy consultation and treatment plan.",
+      "is_rated": true,
+      "review": {
+        "rating": 4,
+        "review_text": "Good advice and treatment. Clinic was clean."
+      }
+    },
+    {
+      "patient_email": "riya.sen@example.com",
+      "doctor_email": "arjun.patel@gmail.com",
+      "date": "2026-05-12",
+      "start_time": "14:00:00",
+      "status": "APPROVED",
+      "payment_type": "OFFLINE",
+      "payment_status": "UNPAID",
+      "fee": 600,
+      "description": "Consultation for knee pain after sports injury.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "dev.sharma@example.com",
+      "doctor_email": "sneha.verma@gmail.com",
+      "date": "2026-05-13",
+      "start_time": "11:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 450,
+      "description": "Routine gynecology checkup and consultation.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very caring and clear explanation of the treatment."
+      }
+    },
+    {
+      "patient_email": "neha.gupta@example.com",
+      "doctor_email": "vijay.kumar@gmail.com",
+      "date": "2026-05-14",
+      "start_time": "15:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 350,
+      "description": "Pediatric consultation for child health checkup.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Friendly and reassuring doctor. Great with children."
+      }
+    },
+    {
+      "patient_email": "siddharth.verma@example.com",
+      "doctor_email": "neha.shah@gmail.com",
+      "date": "2026-05-15",
+      "start_time": "09:30:00",
+      "status": "PENDING",
+      "payment_type": "OFFLINE",
+      "payment_status": "UNPAID",
+      "fee": 300,
+      "description": "General physician appointment for cold and cough.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "anika.patel@example.com",
+      "doctor_email": "amit.singh@gmail.com",
+      "date": "2026-05-16",
+      "start_time": "13:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 700,
+      "description": "Neurology consultation for migraine management.",
+      "is_rated": true,
+      "review": {
+        "rating": 4,
+        "review_text": "Very knowledgeable and patient while answering questions."
+      }
+    },
+    {
+      "patient_email": "varun.rao@example.com",
+      "doctor_email": "reena.jain@gmail.com",
+      "date": "2026-05-17",
+      "start_time": "16:00:00",
+      "status": "APPROVED",
+      "payment_type": "OFFLINE",
+      "payment_status": "UNPAID",
+      "fee": 450,
+      "description": "ENT consultation for sinus discomfort.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "meenal.kapoor@example.com",
+      "doctor_email": "rajesh.menon@gmail.com",
+      "date": "2026-05-18",
+      "start_time": "10:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 550,
+      "description": "Cardiology follow-up after medication change.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Excellent care and very thorough examination."
+      }
+    },
+    {
+      "patient_email": "pratik.desai@example.com",
+      "doctor_email": "divya.krishna@gmail.com",
+      "date": "2026-05-19",
+      "start_time": "14:30:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 380,
+      "description": "Dermatology appointment for acne treatment.",
+      "is_rated": true,
+      "review": {
+        "rating": 4,
+        "review_text": "Good skin care plan and very supportive staff."
+      }
+    },
+    {
+      "patient_email": "kavya.nair@example.com",
+      "doctor_email": "suresh.bhat@gmail.com",
+      "date": "2026-05-20",
+      "start_time": "09:00:00",
+      "status": "CANCELLED",
+      "payment_type": "OFFLINE",
+      "payment_status": "UNPAID",
+      "fee": 370,
+      "description": "Cancelled pediatric appointment for vaccination.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "sachin.menon@example.com",
+      "doctor_email": "anita.kumar@gmail.com",
+      "date": "2026-05-21",
+      "start_time": "11:30:00",
+      "status": "APPROVED",
+      "payment_type": "ONLINE",
+      "payment_status": "UNPAID",
+      "fee": 460,
+      "description": "Gynecology consultation to discuss prenatal care.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "tanvi.shah@example.com",
+      "doctor_email": "deepak.rana@gmail.com",
+      "date": "2026-05-22",
+      "start_time": "13:30:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 320,
+      "description": "General physician follow-up for fatigue and wellness.",
+      "is_rated": true,
+      "review": {
+        "rating": 5,
+        "review_text": "Very friendly and provided practical health tips."
+      }
+    },
+    {
+      "patient_email": "nikhil.joshi@example.com",
+      "doctor_email": "megha.singh@gmail.com",
+      "date": "2026-05-23",
+      "start_time": "15:30:00",
+      "status": "APPROVED",
+      "payment_type": "OFFLINE",
+      "payment_status": "UNPAID",
+      "fee": 390,
+      "description": "Dermatology consultation for rash evaluation.",
+      "is_rated": false
+    },
+    {
+      "patient_email": "maya.kapoor@example.com",
+      "doctor_email": "rohit.patel@gmail.com",
+      "date": "2026-05-24",
+      "start_time": "10:00:00",
+      "status": "COMPLETED",
+      "payment_type": "ONLINE",
+      "payment_status": "PAID",
+      "fee": 620,
+      "description": "Orthopedic consultation for shoulder pain.",
+      "is_rated": true,
+      "review": {
+        "rating": 4,
+        "review_text": "Very knowledgeable and helpful with exercises."
+      }
+    }
+  ]
+}

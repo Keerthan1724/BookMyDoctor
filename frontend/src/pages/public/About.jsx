@@ -1,4 +1,8 @@
 import MainLayout from "../../layouts/MainLayout";
+import {
+  aboutFeatures,
+  howItWorks,
+} from "../../data/publicData";
 
 function About() {
   return (
@@ -12,52 +16,29 @@ function About() {
               About BookMyDoctor
             </h1>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              BookMyDoctor is a complete online doctor appointment booking
-              platform that connects patients with trusted healthcare
-              professionals and simplifies the entire booking experience.
+              BookMyDoctor is a complete online doctor appointment booking platform that connects patients with trusted healthcare professionals.
             </p>
           </div>
 
-          {/* ABOUT DESCRIPTION */}
+          {/* DESCRIPTION */}
           <div className="mb-12 text-center max-w-4xl mx-auto">
             <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
-              Our platform allows users to explore doctors by specialization,
-              check availability, and book appointments seamlessly. From
-              selecting a doctor to managing appointments and payments,
-              everything is designed to be simple, fast, and user-friendly.
+              Our platform allows users to explore doctors by specialization, check availability, and book appointments seamlessly. Everything is designed to be simple, fast, and user-friendly.
             </p>
           </div>
 
           {/* FEATURES */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            
-            <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl shadow">
-              <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">
-                Easy Appointment Booking
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Browse doctors, check availability, and book appointments in just a few steps.
-              </p>
-            </div>
-
-            <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl shadow">
-              <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">
-                Secure Payments
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Supports both offline and online payments with secure integration.
-              </p>
-            </div>
-
-            <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl shadow">
-              <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">
-                Smart Management
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Manage appointments, track history, and view analytics easily.
-              </p>
-            </div>
-
+            {aboutFeatures.map((item, index) => (
+              <div key={index} className="bg-cardLight dark:bg-cardDark p-6 rounded-xl shadow">
+                <h3 className="font-semibold mb-2 text-gray-800 dark:text-white">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
 
           {/* HOW IT WORKS */}
@@ -67,26 +48,16 @@ function About() {
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl">
-                <h3 className="font-medium mb-2">1. Find Doctor</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Search and filter doctors based on specialization, city, and availability.
-                </p>
-              </div>
-
-              <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl">
-                <h3 className="font-medium mb-2">2. Book Appointment</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Choose time slot, enter details, and confirm your appointment.
-                </p>
-              </div>
-
-              <div className="bg-cardLight dark:bg-cardDark p-6 rounded-xl">
-                <h3 className="font-medium mb-2">3. Get Treated</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Visit doctor and manage your appointments easily from dashboard.
-                </p>
-              </div>
+              {howItWorks.map((item, index) => (
+                <div key={index} className="bg-cardLight dark:bg-cardDark p-6 rounded-xl">
+                  <h3 className="font-medium mb-2">
+                    {index + 1}. {item.step}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -95,13 +66,10 @@ function About() {
             <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
               Technology Stack
             </h2>
-
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-              Built using React.js, Tailwind CSS, Django REST Framework, and MySQL,
-              with secure payment integration using Stripe.
+              Built using React.js, Tailwind CSS, Django REST Framework, MySQL, and Stripe payment integration
             </p>
           </div>
-
         </div>
       </div>
     </MainLayout>

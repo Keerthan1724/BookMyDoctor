@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import SeoManager from "./SeoManager";
 
 import Home from "../pages/public/Home";
 import Doctors from "../pages/public/Doctors";
@@ -42,6 +43,7 @@ function AppRoutes() {
 
   return (
     <>
+      <SeoManager />
       <Routes location={background || location}>
         <Route
           path="/"

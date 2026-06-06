@@ -15,7 +15,10 @@ function Reviews() {
             className="bg-cardLight dark:bg-cardDark border border-borderLight dark:border-borderDark rounded-xl p-5 sm:p-6"
           >
             <div className="flex items-center gap-3 mb-4">
-              <img src={item.image} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
+              <img
+                src={item.image}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full"
+              />
               <p className="font-medium text-sm sm:text-base">{item.name}</p>
             </div>
 
@@ -28,8 +31,11 @@ function Reviews() {
                 i < item.rating ? (
                   <FaStar key={i} className="text-yellow-400 text-sm" />
                 ) : (
-                  <FaRegStar key={i} className="text-gray-300 dark:text-gray-500 text-sm" />
-                )
+                  <FaRegStar
+                    key={i}
+                    className="text-gray-300 dark:text-gray-500 text-sm"
+                  />
+                ),
               )}
             </div>
           </div>

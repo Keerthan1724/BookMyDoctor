@@ -5,6 +5,7 @@ import { loginUser } from "../../services/authService";
 import { AuthContext } from "../../context/AuthContext";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { toast } from "../../components/CustomToast";
+import { setAuthTokens } from "../../services/sessionService";
 
 const Login = () => {
   const { loadUser } = useContext(AuthContext);
@@ -44,8 +45,7 @@ const Login = () => {
       setLoading(true);
       const res = await loginUser({ email, password });
 
-      sessionStorage.setItem("accessToken", res.data.access);
-      sessionStorage.setItem("refreshToken", res.data.refresh);
+      setAuthTokens(res.data);
 
       toast(res.data.message || "Login successful", "success");
 
@@ -56,7 +56,7 @@ const Login = () => {
       } else if (loggedInUser?.role === "DOCTOR") {
         navigate("/doctor/dashboard");
       } else {
-        navigate("/");
+        navigate("/profile");
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -123,7 +123,7 @@ const Login = () => {
 
       <div className="mt-6 text-center border-t pt-4 flex justify-center">
         <p className="text-sm text-gray-600 pr-2 dark:text-gray-200">
-          Donâ€™t have an account ?
+          Don't have an account ?
         </p>
 
         <Link

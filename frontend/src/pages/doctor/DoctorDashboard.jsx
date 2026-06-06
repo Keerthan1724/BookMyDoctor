@@ -15,6 +15,7 @@ import {
 } from "../../services/availabilityService";
 import { getDoctors, updateDoctor } from "../../services/doctorService";
 import { toast } from "../../components/CustomToast";
+import Avatar from "../../components/Avatar";
 import { AuthContext } from "../../context/AuthContext";
 import { formatTime12Hour } from "../../utils/formatters";
 
@@ -69,7 +70,9 @@ const DoctorDashboard = () => {
         list.push({
           id: appt.id,
           start_time: appt.slot?.start_time,
-          label: appt.patient_name || "Patient",
+          name: appt.patient?.username || "Patient",
+          image: appt.patient?.profile_image || null,
+          isOffline: false,
         });
       }
     });
@@ -79,7 +82,9 @@ const DoctorDashboard = () => {
         list.push({
           id: `held-${slot.id}`,
           start_time: slot.start_time,
-          label: "Offline Reservation (Held)",
+          name: "Offline Booking (Held)",
+          image: null,
+          isOffline: true,
         });
       }
     });
@@ -123,7 +128,9 @@ const DoctorDashboard = () => {
   const fetchDoctorProfile = async () => {
     try {
       const res = await getDoctors();
-      const currentDoctor = res.data.find((doctor) => doctor.email === user?.email);
+      const currentDoctor = res.data.find(
+        (doctor) => doctor.email === user?.email,
+      );
 
       if (currentDoctor) {
         setDoctorId(currentDoctor.id);
@@ -214,7 +221,9 @@ const DoctorDashboard = () => {
       const res = await updateDoctor(doctorId, { is_active: nextStatus });
       setIsAvailable(res.data.is_active !== false);
       toast(
-        res.data.is_active ? "You are now available" : "You are now unavailable",
+        res.data.is_active
+          ? "You are now available"
+          : "You are now unavailable",
         "success",
       );
     } catch (err) {
@@ -307,23 +316,29 @@ const DoctorDashboard = () => {
               todayAppointments.map((appt) => (
                 <div
                   key={appt.id}
-                  className={`p-3 rounded-lg mb-2 flex items-center gap-3 border transition ${
-                    appt.label.includes("Offline")
+                  className={`flex items-center gap-4 p-4 rounded-2xl border shadow-sm transition mb-3 ${
+                    appt.isOffline
                       ? "bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30"
-                      : "bg-slate-50 border-slate-200 dark:bg-slate-900/60 dark:border-slate-700"
+                      : "bg-white border-slate-200 dark:bg-slate-900/60 dark:border-slate-700"
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm flex-shrink-0">
-                    {appt.label[0]}
-                  </div>
+                  {/* Avatar Component */}
+                  <Avatar
+                    name={appt.isOffline ? "Offline" : appt.name}
+                    image={appt.image}
+                    className={`w-12 h-12 ${
+                      appt.isOffline ? "bg-orange-500 text-white" : ""
+                    }`}
+                    textClassName="text-lg font-bold"
+                    disableFallbackBackground={appt.isOffline}
+                  />
 
-                  <div>
-                    <p className="text-sm sm:text-base font-semibold theme-text">
+                  {/* Details */}
+                  <div className="flex flex-col">
+                    <p className="text-xl font-bold theme-text">
                       {formatTime12Hour(appt.start_time)}
                     </p>
-                    <p className="text-xs sm:text-sm theme-text-muted">
-                      {appt.label}
-                    </p>
+                    <p className="text-sm theme-text-muted">{appt.name}</p>
                   </div>
                 </div>
               ))

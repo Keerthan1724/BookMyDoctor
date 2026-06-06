@@ -1,13 +1,12 @@
 import MainLayout from "../../layouts/MainLayout";
 import { FaQuestionCircle } from "react-icons/fa";
-import { faqs } from "../../data/faqData";
+import { faqs } from "../../data/publicData";
 
 function FAQs() {
   return (
     <MainLayout>
       <div className="bg-bgLight dark:bg-bgDark min-h-screen py-8 sm:py-12">
         <div className="max-w-5xl mx-auto px-4">
-
           <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10 text-gray-800 dark:text-white">
             Frequently Asked Questions
           </h1>
@@ -32,7 +31,6 @@ function FAQs() {
               </div>
             ))}
           </div>
-
         </div>
       </div>
     </MainLayout>

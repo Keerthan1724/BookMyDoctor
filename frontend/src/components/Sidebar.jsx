@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import Avatar from "./Avatar";
 
 const Sidebar = ({ items, mobileOpen, onClose }) => {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   return (
     <>
@@ -62,6 +62,14 @@ const Sidebar = ({ items, mobileOpen, onClose }) => {
               </NavLink>
             );
           })}
+        </div>
+        <div className="mt-auto pt-6 lg:hidden">
+          <button
+            onClick={logout}
+            className="w-full bg-primary px-4 py-3 text-center text-white"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </>

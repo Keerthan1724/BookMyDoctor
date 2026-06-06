@@ -41,7 +41,19 @@ const Navbar = () => {
     <nav className="sticky top-0 z-40 w-full border-b border-borderLight bg-white transition-colors duration-300 dark:border-borderDark dark:bg-gray-900">
       <div className="flex w-full items-center justify-between px-4 py-3 md:px-16 lg:px-20">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} className="h-12" alt="BookMyDoctor" />
+          <div className="flex items-center gap-3 select-none">
+            <img
+              src={logo}
+              className="h-11 w-11 object-contain"
+              alt="BookMyDoctor"
+            />
+
+            <h1 className="hidden md:block text-xl lg:text-2xl font-semibold tracking-wide">
+              <span className="text-slate-900 dark:text-slate-100">Book</span>
+              <span className="text-teal-600 font-bold">My</span>
+              <span className="text-blue-600 font-bold">Doctor</span>
+            </h1>
+          </div>
         </Link>
 
         <div className="hidden gap-6 lg:gap-8 text-base lg:text-lg font-medium md:flex">
@@ -63,8 +75,10 @@ const Navbar = () => {
                   <span className="relative">
                     {item.name}
                     <span
-                      className={`absolute -bottom-2 left-0 h-[2px] w-full bg-primary transition-all duration-300 ${
-                        isActive ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
+                      className={`absolute -bottom-2 left-0 right-0 h-[2px] bg-primary transform transition-transform duration-300 ease-out origin-center ${
+                        isActive
+                          ? "scale-x-100 opacity-100"
+                          : "scale-x-0 opacity-0"
                       }`}
                     />
                   </span>

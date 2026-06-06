@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import React from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { adminSidebar } from "../../data/sidebarItems";
 import { getAppointments } from "../../services/appointmentService";
 import Avatar from "../../components/Avatar";
-import { formatDateNumeric, formatTime12Hour } from "../../utils/formatters";
 
 const statusTabs = [
   "ALL",
@@ -35,21 +35,17 @@ const AppointmentList = () => {
   };
 
   const getStatusStyle = (status) => {
-    if (status === "APPROVED") {
+    if (status === "APPROVED")
       return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300";
-    }
 
-    if (status === "PENDING") {
+    if (status === "PENDING")
       return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300";
-    }
 
-    if (status === "COMPLETED") {
+    if (status === "COMPLETED")
       return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
-    }
 
-    if (status === "CANCELLED" || status === "REJECTED") {
+    if (status === "CANCELLED" || status === "REJECTED")
       return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
-    }
 
     return "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300";
   };
@@ -64,6 +60,7 @@ const AppointmentList = () => {
       <div className="space-y-4 p-4 md:p-6">
         <h1 className="text-xl font-semibold">Appointments</h1>
 
+        {/* STATUS TABS */}
         <div className="flex flex-wrap gap-3">
           {statusTabs.map((tab) => (
             <button
@@ -80,6 +77,7 @@ const AppointmentList = () => {
           ))}
         </div>
 
+        {/* TABLE */}
         <div className="overflow-x-auto rounded-xl bg-white shadow dark:bg-gray-900">
           <table className="w-full text-sm md:text-base">
             <thead className="bg-gray-100 text-left dark:bg-gray-800">
@@ -124,49 +122,45 @@ const AppointmentList = () => {
                             image={doctor?.profile_image}
                             alt="doctor"
                             className="h-10 w-10"
-                            textClassName="text-sm font-semibold"
                           />
-
                           <span className="font-medium">
                             {doctor?.username || "N/A"}
                           </span>
                         </div>
                       </td>
 
-                      <td className="p-3 text-gray-600 dark:text-gray-300">
+                      <td className="p-3">
                         {doctor?.specialization || "N/A"}
                       </td>
 
-                      <td className="p-3 text-gray-600 dark:text-gray-300">
+                      <td className="p-3">
                         <div className="flex items-center gap-3">
                           <Avatar
                             name={patient?.username}
                             image={patient?.profile_image}
                             alt="patient"
                             className="h-10 w-10"
-                            textClassName="text-sm font-semibold"
                           />
-
                           <span>{patient?.username || "N/A"}</span>
                         </div>
                       </td>
 
-                      <td className="p-3 text-gray-600 dark:text-gray-300">
-                        {formatDateNumeric(appointment.slot?.date)}
+                      <td className="p-3">
+                        {appointment.slot?.date || "N/A"}
                       </td>
 
-                      <td className="p-3 text-gray-600 dark:text-gray-300">
-                        {formatTime12Hour(appointment.slot?.start_time)}
+                      <td className="p-3">
+                        {appointment.slot?.start_time || "N/A"}
                       </td>
 
-                      <td className="p-3 text-gray-600 dark:text-gray-300">
+                      <td className="p-3">
                         ₹{appointment.fee}
                       </td>
 
                       <td className="p-3">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(
-                            appointment.status,
+                            appointment.status
                           )}`}
                         >
                           {appointment.status}

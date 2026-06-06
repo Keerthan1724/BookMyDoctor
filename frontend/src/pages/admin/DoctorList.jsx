@@ -29,13 +29,12 @@ const DoctorList = () => {
   };
 
   const filteredDoctors = doctors.filter((doc) =>
-    doc?.username?.toLowerCase().includes(searchText.toLowerCase())
+    doc?.username?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (
     <AdminLayout sidebarItems={adminSidebar}>
       <div className="p-4 md:p-6 space-y-4">
-
         {/* Title */}
         <h1 className="text-xl font-semibold">Doctors</h1>
 
@@ -89,9 +88,7 @@ const DoctorList = () => {
                           textClassName="text-sm font-semibold"
                         />
 
-                        <span className="font-medium">
-                          {doc?.username}
-                        </span>
+                        <span className="font-medium">{doc?.username}</span>
                       </div>
                     </td>
 
@@ -134,7 +131,9 @@ const DoctorList = () => {
           onClose={() => setSelectedDoctor(null)}
           onUpdated={(updatedDoctor) => {
             setDoctors((prev) =>
-              prev.map((doc) => (doc.id === updatedDoctor.id ? updatedDoctor : doc)),
+              prev.map((doc) =>
+                doc.id === updatedDoctor.id ? updatedDoctor : doc,
+              ),
             );
             setSelectedDoctor(updatedDoctor);
           }}

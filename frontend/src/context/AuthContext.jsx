@@ -2,6 +2,12 @@ import { createContext, useState, useEffect } from "react";
 import { getProfile } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../utils/media";
+import {
+  clearSession,
+  clearStoredUser,
+  getAccessToken,
+  setStoredUser,
+} from "../services/sessionService";
 
 export const AuthContext = createContext();
 
@@ -16,12 +22,12 @@ export const AuthProvider = ({ children }) => {
       const res = await getProfile();
 
       setUser(res.data);
-      sessionStorage.setItem("user", JSON.stringify(res.data));
+      setStoredUser(res.data);
 
       return res.data;
     } catch (err) {
       setUser(null);
-      sessionStorage.removeItem("user");
+      clearStoredUser();
       return null;
     } finally {
       setLoading(false);
@@ -30,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const init = async () => {
-      const token = sessionStorage.getItem("accessToken");
+      const token = getAccessToken();
 
       if (token) {
         await loadUser();
@@ -45,9 +51,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = () => {
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("refreshToken");
-    sessionStorage.removeItem("user");
+    clearSession();
 
     setUser(null);
     navigate("/");
@@ -63,11 +67,23 @@ export const AuthProvider = ({ children }) => {
       { bg: "#d63031", color: "#fff" },
       { bg: "#fd79a8", color: "#fff" },
       { bg: "#00cec9", color: "#fff" },
+      { bg: "#845ef7", color: "#fff" },
+      { bg: "#3b82f6", color: "#fff" },
+      { bg: "#16a34a", color: "#fff" },
+      { bg: "#f59e0b", color: "#1f2937" },
+      { bg: "#a855f7", color: "#fff" },
+      { bg: "#38bdf8", color: "#1f2937" },
+      { bg: "#f97316", color: "#fff" },
+      { bg: "#10b981", color: "#fff" },
     ];
 
     if (!username) return styles[0];
 
-    return styles[username.charCodeAt(0) % styles.length];
+    const hash = username
+      .split("")
+      .reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 0);
+
+    return styles[hash % styles.length];
   };
 
   const getAvatar = () => {

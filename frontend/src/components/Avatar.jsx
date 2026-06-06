@@ -11,6 +11,7 @@ const Avatar = ({
   imageClassName = "",
   textClassName = "",
   disableFallbackBackground = false,
+  square = false,
 }) => {
   const { getAvatarColors } = useContext(AuthContext);
   const avatarStyle = getAvatarColors(name);
@@ -19,11 +20,14 @@ const Avatar = ({
 
   return (
     <div
-      className={`flex items-center justify-center overflow-hidden rounded-full ${className}`}
+      className={`flex items-center justify-center overflow-hidden ${
+        square ? "" : "rounded-full"
+      } ${className}`}
       style={{
         backgroundColor:
           imageUrl || disableFallbackBackground ? undefined : avatarStyle.bg,
-        color: imageUrl || disableFallbackBackground ? undefined : avatarStyle.color,
+        color:
+          imageUrl || disableFallbackBackground ? undefined : avatarStyle.color,
       }}
     >
       {imageUrl ? (
